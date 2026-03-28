@@ -181,26 +181,25 @@ function EditorTab({
 
   return (
     <div
-      className={`flex items-center gap-1 px-3 h-full cursor-pointer group border-r border-[#252526] transition-colors shrink-0 ${
+      className={`flex items-center gap-1 px-3 h-full cursor-pointer group border-r border-ide-sidebar-bg transition-colors shrink-0 min-w-[100px] max-w-[200px] ${
         isActive
-          ? 'bg-[#1e1e1e] text-white border-t-2 border-t-[#0e639c]'
-          : 'bg-[#2d2d2d] text-[#858585] hover:bg-[#2a2a2a] border-t-2 border-t-transparent'
+          ? 'bg-ide-bg text-white border-t-2 border-t-ide-accent'
+          : 'bg-ide-tab-bg text-ide-text-muted hover:bg-ide-tab-hover border-t-2 border-t-transparent'
       }`}
       onClick={onActivate}
-      style={{ minWidth: 100, maxWidth: 200 }}
     >
       <span
-        className="shrink-0"
-        style={{ fontSize: '10px', fontWeight: 700, fontFamily: 'monospace', color: langColor }}
+        className="shrink-0 text-[10px] font-bold font-mono"
+        style={{ color: langColor }}
       >
         {ext?.toUpperCase()}
       </span>
-      <span className="flex-1 truncate" style={{ fontSize: '12px' }}>
+      <span className="flex-1 truncate text-[12px]">
         {tab.name}
       </span>
       {tab.modified && <Circle size={7} className="fill-white text-white shrink-0" />}
       <button
-        className="shrink-0 p-0.5 rounded hover:bg-[#3d3d3d] opacity-0 group-hover:opacity-100 transition-opacity"
+        className="shrink-0 p-0.5 rounded hover:bg-ide-border opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={(e) => { e.stopPropagation(); onClose(); }}
       >
         <X size={12} />
@@ -220,15 +219,14 @@ function Breadcrumb({ fileId }: { fileId: string }) {
   const segments = paths[fileId] || ['my_soc_project', `${fileId}.v`];
 
   return (
-    <div className="flex items-center gap-0.5 px-3 h-6 bg-[#1e1e1e] border-b border-[#3d3d3d] shrink-0">
+    <div className="flex items-center gap-0.5 px-3 h-6 bg-ide-bg border-b border-ide-border shrink-0">
       {segments.map((seg, i) => (
         <span key={i} className="flex items-center gap-0.5">
-          {i > 0 && <ChevronRight size={11} className="text-[#666]" />}
+          {i > 0 && <ChevronRight size={11} className="text-ide-text-dimmer" />}
           <span
             className={`cursor-pointer hover:text-white transition-colors ${
-              i === segments.length - 1 ? 'text-[#cccccc]' : 'text-[#858585]'
-            }`}
-            style={{ fontSize: '12px' }}
+              i === segments.length - 1 ? 'text-ide-text' : 'text-ide-text-muted'
+            } text-[12px]`}
           >
             {seg}
           </span>
@@ -287,13 +285,13 @@ export function EditorArea({
 
   if (tabs.length === 0) {
     return (
-      <div className="flex flex-col h-full bg-[#1e1e1e] items-center justify-center">
+      <div className="flex flex-col h-full bg-ide-bg items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-[#252526] flex items-center justify-center mx-auto mb-4">
-            <span className="text-[#0e639c]" style={{ fontSize: 28, fontWeight: 700 }}>R</span>
+          <div className="w-16 h-16 rounded-full bg-ide-sidebar-bg flex items-center justify-center mx-auto mb-4">
+            <span className="text-ide-accent text-[28px] font-bold">R</span>
           </div>
-          <div className="text-[#cccccc] mb-1" style={{ fontSize: '20px' }}>RTL Studio</div>
-          <div className="text-[#858585]" style={{ fontSize: '13px' }}>Open a file to start editing, or select one from the Explorer</div>
+          <div className="text-ide-text mb-1 text-[20px]">RTL Studio</div>
+          <div className="text-ide-text-muted text-[13px]">Open a file to start editing, or select one from the Explorer</div>
           <div className="mt-6 flex flex-col gap-1 text-left">
             {[
               ['Ctrl+P', 'Quick Open File'],
@@ -301,8 +299,8 @@ export function EditorArea({
               ['Ctrl+`', 'Open Terminal'],
             ].map(([key, label]) => (
               <div key={key} className="flex items-center gap-3">
-                <kbd className="px-2 py-0.5 bg-[#3d3d3d] rounded text-[#cccccc] border border-[#555]" style={{ fontSize: '11px' }}>{key}</kbd>
-                <span className="text-[#858585]" style={{ fontSize: '12px' }}>{label}</span>
+                <kbd className="px-2 py-0.5 bg-ide-border rounded text-ide-text border border-ide-text-dim text-[11px]">{key}</kbd>
+                <span className="text-ide-text-muted text-[12px]">{label}</span>
               </div>
             ))}
           </div>
@@ -312,9 +310,9 @@ export function EditorArea({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#1e1e1e] overflow-hidden">
+    <div className="flex flex-col h-full bg-ide-bg overflow-hidden">
       {/* Tab bar */}
-      <div className="flex items-stretch h-9 bg-[#2d2d2d] overflow-x-auto shrink-0 border-b border-[#252526]">
+      <div className="flex items-stretch h-9 bg-ide-tab-bg overflow-x-auto shrink-0 border-b border-ide-sidebar-bg">
         {tabs.map((tab) => (
           <EditorTab
             key={tab.id}
@@ -326,12 +324,12 @@ export function EditorArea({
         ))}
         <div className="flex-1" />
         <button
-          className="px-2 text-[#858585] hover:text-[#cccccc] transition-colors shrink-0"
+          className="px-2 text-ide-text-muted hover:text-ide-text transition-colors shrink-0"
           title="Split Editor"
         >
           <Split size={14} />
         </button>
-        <button className="px-2 text-[#858585] hover:text-[#cccccc] transition-colors shrink-0">
+        <button className="px-2 text-ide-text-muted hover:text-ide-text transition-colors shrink-0">
           <MoreHorizontal size={14} />
         </button>
       </div>
@@ -340,7 +338,7 @@ export function EditorArea({
       {activeTab && <Breadcrumb fileId={activeTabId} />}
 
       {/* Monaco Editor */}
-      <div className="flex-1 overflow-hidden bg-[#1a1b26]">
+      <div className="flex-1 overflow-hidden bg-ide-editor-bg">
         <Editor
           height="100%"
           language={getLanguage(activeTabId)}

@@ -7,6 +7,8 @@ import { assertString } from './validators.js';
 
 let configData: Record<string, unknown> = {};
 let configPath = '';
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+const SAVE_DEBOUNCE_MS = 300;
 
 function loadConfig(): void {
   configPath = path.join(app.getPath('userData'), 'config.json');
@@ -23,6 +25,14 @@ function saveConfig(): void {
   fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf-8');
 }
 
+function debouncedSave(): void {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveConfig();
+    saveTimer = null;
+  }, SAVE_DEBOUNCE_MS);
+}
+
 export function registerConfigHandlers(): void {
   loadConfig();
 
@@ -34,6 +44,6 @@ export function registerConfigHandlers(): void {
   ipcMain.handle(AsyncChannels.CONFIG_SET, async (_event, key: unknown, value: unknown) => {
     assertString(key, 'key');
     configData[key] = value;
-    saveConfig();
+    debouncedSave();
   });
 }

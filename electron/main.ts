@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { registerAllHandlers, setupWindowStreams, setProjectRoot } from './ipc/register.js';
+import { registerAllHandlers, setupWindowStreams } from './ipc/register.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -13,6 +13,7 @@ function getMainWindow(): BrowserWindow | null {
 
 function createWindow(): void {
   const isMac = process.platform === 'darwin';
+  const preloadFile = path.join(__dirname, 'preload.mjs');
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -26,7 +27,7 @@ function createWindow(): void {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadFile,
       webSecurity: true,
     },
   });
@@ -45,8 +46,8 @@ function createWindow(): void {
   });
 }
 
-// Set project root to cwd for filesystem sandbox
-setProjectRoot(process.cwd());
+// Project root is not set by default — user must open a project via the UI.
+// setProjectRoot() will be called when the user selects a project directory.
 
 // Register all IPC handlers before window creation
 registerAllHandlers(getMainWindow);

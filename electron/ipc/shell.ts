@@ -1,26 +1,69 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { AsyncChannels, StreamChannels } from './channels.js';
-import { assertString } from './validators.js';
+import { assertString, validatePathWithinRoot } from './validators.js';
+
+// ─── Security: command allowlist ──────────────────────────────────────────────
+const ALLOWED_COMMANDS = new Set([
+  'verilator', 'iverilog', 'vvp',
+  'python', 'python3',
+  'make', 'cmake',
+  'cocotb-config',
+  'git',
+  'bash', 'sh',
+]);
+
+const MAX_PROCESSES = 10;
 
 const processes = new Map<string, ChildProcess>();
 let nextId = 1;
+let projectRoot: string | null = null;
+
+export function setShellProjectRoot(root: string): void {
+  projectRoot = root;
+}
 
 export function registerShellHandlers(getMainWindow: () => BrowserWindow | null): void {
   ipcMain.handle(
     AsyncChannels.SHELL_EXEC,
     async (_event, command: unknown, args?: unknown, options?: unknown) => {
       assertString(command, 'command');
-      const argList = Array.isArray(args) ? args.map(String) : [];
+
+      // Security: only allow known commands
+      const baseName = command.replace(/\\/g, '/').split('/').pop() ?? command;
+      if (!ALLOWED_COMMANDS.has(baseName)) {
+        throw new Error(`Command not allowed: ${command}. Allowed: ${[...ALLOWED_COMMANDS].join(', ')}`);
+      }
+
+      // Security: validate each arg is a string
+      const argList: string[] = [];
+      if (Array.isArray(args)) {
+        for (let i = 0; i < args.length; i++) {
+          assertString(args[i], `args[${i}]`);
+          argList.push(args[i] as string);
+        }
+      }
+
       const opts = (options && typeof options === 'object') ? options as Record<string, unknown> : {};
-      const cwd = typeof opts['cwd'] === 'string' ? opts['cwd'] : undefined;
+      let cwd = typeof opts['cwd'] === 'string' ? opts['cwd'] : undefined;
+
+      // Security: validate cwd within project root
+      if (cwd && projectRoot) {
+        cwd = validatePathWithinRoot(projectRoot, cwd);
+      }
+
+      // Security: enforce concurrency limit
+      if (processes.size >= MAX_PROCESSES) {
+        throw new Error(`Too many concurrent processes (max ${MAX_PROCESSES}). Kill an existing process first.`);
+      }
 
       const id = String(nextId++);
       const child = spawn(command, argList, {
         cwd,
         shell: false,
         stdio: ['ignore', 'pipe', 'pipe'],
-      });
+        windowsHide: true,
+      }) as ChildProcess;
       processes.set(id, child);
 
       const win = getMainWindow();

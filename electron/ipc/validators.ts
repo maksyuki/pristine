@@ -25,3 +25,15 @@ export function assertOptionalString(value: unknown, name: string): asserts valu
     throw new Error(`Expected string or undefined for "${name}", got ${typeof value}`);
   }
 }
+
+const VALID_ENCODINGS = new Set<string>([
+  'utf-8', 'utf8', 'ascii', 'binary', 'base64', 'hex', 'latin1', 'ucs-2', 'ucs2', 'utf16le',
+]);
+
+export function assertValidEncoding(value: unknown, name: string): asserts value is BufferEncoding {
+  if (value === undefined) return;
+  assertString(value, name);
+  if (!VALID_ENCODINGS.has(value.toLowerCase())) {
+    throw new Error(`Invalid encoding "${value}". Allowed: ${[...VALID_ENCODINGS].join(', ')}`);
+  }
+}

@@ -1,9 +1,16 @@
 import { BrowserWindow } from 'electron';
+import path from 'node:path';
 import { registerWindowHandlers, setupWindowStreams } from './window.js';
-import { registerFilesystemHandlers, setProjectRoot } from './filesystem.js';
-import { registerShellHandlers } from './shell.js';
+import { registerFilesystemHandlers, setProjectRoot as setFsRoot } from './filesystem.js';
+import { registerShellHandlers, setShellProjectRoot } from './shell.js';
 import { registerConfigHandlers } from './config.js';
 import { registerPlatformHandler } from './platform.js';
+
+export function setProjectRoot(root: string): void {
+  const resolved = path.resolve(root);
+  setFsRoot(resolved);
+  setShellProjectRoot(resolved);
+}
 
 export function registerAllHandlers(getMainWindow: () => BrowserWindow | null): void {
   registerPlatformHandler();
@@ -13,4 +20,4 @@ export function registerAllHandlers(getMainWindow: () => BrowserWindow | null): 
   registerConfigHandlers();
 }
 
-export { setupWindowStreams, setProjectRoot };
+export { setupWindowStreams };

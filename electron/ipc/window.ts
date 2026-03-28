@@ -8,21 +8,28 @@ export function registerWindowHandlers(getMainWindow: () => BrowserWindow | null
   });
 
   ipcMain.handle(AsyncChannels.WINDOW_MINIMIZE, () => {
-    getMainWindow()?.minimize();
+    const win = getMainWindow();
+    if (!win) return false;
+    win.minimize();
+    return true;
   });
 
   ipcMain.handle(AsyncChannels.WINDOW_MAXIMIZE, () => {
     const win = getMainWindow();
-    if (!win) return;
+    if (!win) return false;
     if (win.isMaximized()) {
       win.unmaximize();
     } else {
       win.maximize();
     }
+    return win.isMaximized();
   });
 
   ipcMain.handle(AsyncChannels.WINDOW_CLOSE, () => {
-    getMainWindow()?.close();
+    const win = getMainWindow();
+    if (!win) return false;
+    win.close();
+    return true;
   });
 }
 

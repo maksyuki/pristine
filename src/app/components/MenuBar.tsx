@@ -41,6 +41,10 @@ const menus = [
 ];
 
 const noDrag = { WebkitAppRegion: 'no-drag' as const };
+const noDragInteractive = {
+  WebkitAppRegion: 'no-drag' as const,
+  pointerEvents: 'auto' as const,
+};
 const isMacOS = window.electronAPI?.platform === 'darwin';
 
 export function MenuBar() {
@@ -72,7 +76,7 @@ export function MenuBar() {
   return (
     <div
       ref={ref}
-      className="flex items-center h-8 bg-[#3c3c3c] select-none shrink-0 z-50"
+      className="flex items-center h-8 bg-ide-menubar-bg select-none shrink-0 z-50"
       style={{ userSelect: 'none', WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       {/* macOS traffic light clearance */}
@@ -80,20 +84,19 @@ export function MenuBar() {
 
       {/* App icon / title */}
       <div className="flex items-center gap-1.5 px-3 pr-4" style={noDrag as React.CSSProperties}>
-        <div className="w-4 h-4 rounded-sm bg-[#0e639c] flex items-center justify-center">
-          <span className="text-white" style={{ fontSize: '9px', fontWeight: 700 }}>P</span>
+        <div className="w-4 h-4 rounded-sm bg-ide-accent flex items-center justify-center">
+          <span className="text-white text-[9px] font-bold">P</span>
         </div>
-        <span className="text-[#cccccc]" style={{ fontSize: '12px' }}>Pristine</span>
+        <span className="text-ide-text text-[12px]">Pristine</span>
       </div>
 
       {/* Menu items */}
       {menus.map((menu, idx) => (
         <div key={menu.label} className="relative" style={noDrag as React.CSSProperties}>
           <button
-            className={`px-2.5 h-8 text-[#cccccc] hover:bg-[#505050] transition-colors ${
-              openMenu === idx ? 'bg-[#094771] text-white' : ''
-            }`}
-            style={{ fontSize: '12px' }}
+            className={`px-2.5 h-8 text-ide-text hover:bg-ide-btn-hover transition-colors ${
+              openMenu === idx ? 'bg-ide-accent-dark text-white' : ''
+            } text-[12px]`}
             onClick={() => setOpenMenu(openMenu === idx ? null : idx)}
             onMouseEnter={() => openMenu !== null && setOpenMenu(idx)}
           >
@@ -101,15 +104,14 @@ export function MenuBar() {
           </button>
 
           {openMenu === idx && (
-            <div className="absolute top-full left-0 bg-[#252526] border border-[#454545] shadow-2xl z-50 min-w-48 py-1">
+            <div className="absolute top-full left-0 bg-ide-sidebar-bg border border-ide-border-light shadow-2xl z-50 min-w-48 py-1">
               {menu.items.map((item, i) =>
                 item === '---' ? (
-                  <div key={i} className="h-px bg-[#454545] my-1" />
+                  <div key={i} className="h-px bg-ide-border-light my-1" />
                 ) : (
                   <button
                     key={i}
-                    className="w-full text-left px-4 py-1 text-[#cccccc] hover:bg-[#094771] hover:text-white transition-colors"
-                    style={{ fontSize: '12px' }}
+                    className="w-full text-left px-4 py-1 text-ide-text hover:bg-ide-accent-dark hover:text-white transition-colors text-[12px]"
                     onClick={() => setOpenMenu(null)}
                   >
                     {item}
@@ -127,20 +129,18 @@ export function MenuBar() {
         {/* Select Project dropdown */}
         <div ref={projectRef} className="relative flex items-center h-full">
           <button
-            className="flex items-center gap-1.5 px-3 h-full text-[#cccccc] hover:bg-[#505050] transition-colors"
-            style={{ fontSize: '12px' }}
+            className="flex items-center gap-1.5 px-3 h-full text-ide-text hover:bg-ide-btn-hover transition-colors text-[12px]"
             onClick={() => setProjectOpen(!projectOpen)}
           >
             <span>{selectedProject}</span>
             <ChevronDown size={12} />
           </button>
           {projectOpen && (
-            <div className="absolute top-full left-0 mt-0 bg-[#252526] border border-[#454545] shadow-2xl z-50 min-w-44 py-1">
+            <div className="absolute top-full left-0 mt-0 bg-ide-sidebar-bg border border-ide-border-light shadow-2xl z-50 min-w-44 py-1">
               {projectOptions.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
-                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-[#cccccc] hover:bg-[#094771] hover:text-white transition-colors"
-                  style={{ fontSize: '12px' }}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-ide-text hover:bg-ide-accent-dark hover:text-white transition-colors text-[12px]"
                   onClick={() => { setSelectedProject(label); setProjectOpen(false); }}
                 >
                   <Icon size={14} className="shrink-0" />
@@ -152,84 +152,90 @@ export function MenuBar() {
         </div>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#555555] mx-1" />
+        <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Search */}
-        <button className="flex items-center gap-1.5 px-10 h-full text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="flex items-center gap-1.5 px-10 h-full text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <Search size={13} />
-          <span className="text-[#858585]" style={{ fontSize: '12px' }}>Search</span>
+          <span className="text-ide-text-muted text-[12px]">Search</span>
         </button>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#555555] mx-1" />
+        <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Upgrade to Pro */}
-        <button className="flex items-center gap-1 px-2.5 h-full text-[#cccccc] hover:bg-[#505050] transition-colors" style={{ fontSize: '12px' }}>
-          <Zap size={12} className="text-[#f0c040]" />
+        <button className="flex items-center gap-1 px-2.5 h-full text-ide-text hover:bg-ide-btn-hover transition-colors text-[12px]">
+          <Zap size={12} className="text-ide-pro" />
           <span>Upgrade to </span>
-          <span className="text-[#f0c040]" style={{ fontWeight: 600 }}>Pro</span>
+          <span className="text-ide-pro font-[600]">Pro</span>
           <ChevronRight size={12} />
         </button>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#555555] mx-1" />
+        <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Navigation arrows */}
-        <button className="w-8 h-full flex items-center justify-center text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <ChevronLeft size={16} />
         </button>
-        <button className="w-8 h-full flex items-center justify-center text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <ChevronRight size={16} />
         </button>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#555555] mx-1" />
+        <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Layout icons */}
-        <button className="w-8 h-full flex items-center justify-center text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <PanelLeft size={15} />
         </button>
-        <button className="w-8 h-full flex items-center justify-center text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <PanelBottom size={15} />
         </button>
-        <button className="w-8 h-full flex items-center justify-center text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <Columns2 size={15} />
         </button>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#555555] mx-1" />
+        <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Settings */}
-        <button className="w-8 h-full flex items-center justify-center text-[#858585] hover:text-[#cccccc] hover:bg-[#505050] transition-colors">
+        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
           <Settings size={15} />
         </button>
 
         {/* User avatar */}
-        <button className="w-8 h-full flex items-center justify-center hover:bg-[#505050] transition-colors relative">
-          <CircleUser size={16} className="text-[#858585]" />
-          <span className="absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full bg-[#4caf50] border border-[#3c3c3c]" />
+        <button className="w-8 h-full flex items-center justify-center hover:bg-ide-btn-hover transition-colors relative">
+          <CircleUser size={16} className="text-ide-text-muted" />
+          <span className="absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full bg-ide-online border border-ide-menubar-bg" />
         </button>
 
         {/* Divider */}
-        <div className="w-px h-4 bg-[#555555] mx-1" />
+        <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Window controls (hidden on macOS — native traffic lights used instead) */}
         {!isMacOS && (
           <>
             <button
-              className="w-9 h-full flex items-center justify-center text-[#858585] hover:text-white hover:bg-[#505050] transition-colors"
+              data-testid="window-control-minimize"
+              className="w-9 h-full flex items-center justify-center text-ide-text-muted hover:text-white hover:bg-ide-btn-hover transition-colors"
+              style={noDragInteractive as React.CSSProperties}
               onClick={() => window.electronAPI?.minimize()}
             >
               <Minus size={14} />
             </button>
             <button
-              className="w-9 h-full flex items-center justify-center text-[#858585] hover:text-white hover:bg-[#505050] transition-colors"
+              data-testid="window-control-maximize"
+              className="w-9 h-full flex items-center justify-center text-ide-text-muted hover:text-white hover:bg-ide-btn-hover transition-colors"
+              style={noDragInteractive as React.CSSProperties}
               onClick={() => window.electronAPI?.maximize()}
             >
               <Square size={12} />
             </button>
             <button
-              className="w-9 h-full flex items-center justify-center text-[#858585] hover:text-white hover:bg-[#c42b1c] transition-colors"
+              data-testid="window-control-close"
+              className="w-9 h-full flex items-center justify-center text-ide-text-muted hover:text-white hover:bg-ide-close transition-colors"
+              style={noDragInteractive as React.CSSProperties}
               onClick={() => window.electronAPI?.close()}
             >
               <X size={14} />

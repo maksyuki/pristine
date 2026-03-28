@@ -78,7 +78,138 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* ─── IDE Semantic Colors (oklch) ─────────────────────────────────────────── */
+:root {
+  /* Layout backgrounds */
+  --ide-bg: oklch(0.235 0.000 89.9);             /* #1e1e1e */
+  --ide-sidebar-bg: oklch(0.265 0.002 286.3);    /* #252526 */
+  --ide-activitybar-bg: oklch(0.321 0.000 89.9); /* #333333 */
+  --ide-menubar-bg: oklch(0.356 0.000 89.9);     /* #3c3c3c */
+  --ide-tab-bg: oklch(0.297 0.000 89.9);         /* #2d2d2d */
+  --ide-selection: oklch(0.339 0.010 285.8);      /* #37373d */
+  --ide-hover: oklch(0.295 0.005 219.6);          /* #2a2d2e */
+  --ide-tab-hover: oklch(0.285 0.000 89.9);      /* #2a2a2a */
+  --ide-editor-bg: oklch(0.226 0.021 280.5);     /* #1a1b26 */
+
+  /* Text */
+  --ide-text: oklch(0.845 0.000 89.9);           /* #cccccc */
+  --ide-text-muted: oklch(0.617 0.000 89.9);     /* #858585 */
+  --ide-text-section: oklch(0.792 0.000 89.9);   /* #bbbbbb */
+  --ide-text-chevron: oklch(0.823 0.000 89.9);   /* #c5c5c5 */
+  --ide-text-dim: oklch(0.450 0.000 89.9);       /* #555555 */
+  --ide-text-dimmer: oklch(0.510 0.000 89.9);    /* #666666 */
+
+  /* Borders */
+  --ide-border: oklch(0.360 0.000 89.9);         /* #3d3d3d */
+  --ide-border-light: oklch(0.390 0.000 89.9);   /* #454545 */
+  --ide-btn-hover: oklch(0.431 0.000 89.9);      /* #505050 */
+
+  /* Accent */
+  --ide-accent: oklch(0.483 0.117 245.5);        /* #0e639c */
+  --ide-accent-dark: oklch(0.385 0.092 245.3);   /* #094771 */
+  --ide-accent-vivid: oklch(0.567 0.155 248.5);  /* #007acc */
+  --ide-accent-hover: oklch(0.551 0.135 245.7);  /* #1177bb */
+  --ide-status-hover: oklch(0.611 0.142 244.7);  /* #1f8ad2 */
+
+  /* Diagnostics */
+  --ide-error: oklch(0.738 0.138 32.5);          /* #f48771 */
+  --ide-warning: oklch(0.740 0.152 92.8);        /* #cca700 */
+  --ide-info: oklch(0.863 0.080 232.1);          /* #9cdcfe */
+  --ide-info-bright: oklch(0.779 0.119 246.9);   /* #75beff */
+  --ide-success: oklch(0.760 0.115 177.2);       /* #4ec9b0 */
+
+  /* File icon colors */
+  --ide-file-v: oklch(0.742 0.127 244.8);        /* #5fb3f6 */
+  --ide-file-sv: oklch(0.709 0.159 293.5);       /* #a78bfa */
+  --ide-file-xdc: oklch(0.779 0.131 56.4);       /* #f6a05f */
+  --ide-file-yaml: oklch(0.762 0.144 65.8);      /* #ef9d3f */
+  --ide-file-md: oklch(0.794 0.083 223.3);       /* #7ec8e3 */
+
+  /* Syntax token colors */
+  --ide-syntax-keyword: oklch(0.702 0.109 329.4); /* #c586c0 */
+  --ide-syntax-function: oklch(0.882 0.066 107.7); /* #dcdcaa */
+  --ide-syntax-number: oklch(0.823 0.059 134.9);  /* #b5cea8 */
+  --ide-syntax-string: oklch(0.710 0.083 43.2);   /* #ce9178 */
+  --ide-syntax-folder: oklch(0.796 0.089 78.4);   /* #dcb67a */
+
+  /* Special */
+  --ide-cursor: oklch(0.753 0.003 128.5);        /* #aeafad */
+  --ide-pro: oklch(0.829 0.149 87.4);            /* #f0c040 */
+  --ide-online: oklch(0.673 0.162 144.2);         /* #4caf50 */
+  --ide-close: oklch(0.536 0.191 30.1);          /* #c42b1c */
+
+  /* Chat / Dracula theme */
+  --ide-chat-bg: oklch(0.243 0.019 280.4);       /* #1e1f29 */
+  --ide-chat-dropdown: oklch(0.255 0.019 280.5); /* #21222c */
+  --ide-chat-hover: oklch(0.288 0.022 277.5);    /* #282a36 */
+  --ide-chat-input: oklch(0.310 0.027 278.8);    /* #2d2f3e */
+  --ide-chat-border: oklch(0.403 0.032 277.8);   /* #44475a */
+  --ide-chat-muted: oklch(0.560 0.080 270.1);    /* #6272a4 */
+  --ide-chat-text: oklch(0.977 0.008 106.5);     /* #f8f8f2 */
+  --ide-chat-purple: oklch(0.742 0.149 301.9);   /* #bd93f9 */
+  --ide-chat-purple-hover: oklch(0.793 0.125 301.6); /* #caa8ff */
+  --ide-chat-cyan: oklch(0.883 0.093 212.8);     /* #8be9fd */
+  --ide-chat-text-bright: oklch(0.991 0.000 89.9); /* #fcfcfc */
+  --ide-chat-input-border: oklch(0.358 0.004 219.6); /* #3a3d3e */
+}
+
 @theme inline {
+  /* IDE semantic colors → Tailwind utilities */
+  --color-ide-bg: var(--ide-bg);
+  --color-ide-sidebar-bg: var(--ide-sidebar-bg);
+  --color-ide-activitybar-bg: var(--ide-activitybar-bg);
+  --color-ide-menubar-bg: var(--ide-menubar-bg);
+  --color-ide-tab-bg: var(--ide-tab-bg);
+  --color-ide-selection: var(--ide-selection);
+  --color-ide-hover: var(--ide-hover);
+  --color-ide-tab-hover: var(--ide-tab-hover);
+  --color-ide-editor-bg: var(--ide-editor-bg);
+  --color-ide-text: var(--ide-text);
+  --color-ide-text-muted: var(--ide-text-muted);
+  --color-ide-text-section: var(--ide-text-section);
+  --color-ide-text-chevron: var(--ide-text-chevron);
+  --color-ide-text-dim: var(--ide-text-dim);
+  --color-ide-text-dimmer: var(--ide-text-dimmer);
+  --color-ide-border: var(--ide-border);
+  --color-ide-border-light: var(--ide-border-light);
+  --color-ide-btn-hover: var(--ide-btn-hover);
+  --color-ide-accent: var(--ide-accent);
+  --color-ide-accent-dark: var(--ide-accent-dark);
+  --color-ide-accent-vivid: var(--ide-accent-vivid);
+  --color-ide-accent-hover: var(--ide-accent-hover);
+  --color-ide-status-hover: var(--ide-status-hover);
+  --color-ide-error: var(--ide-error);
+  --color-ide-warning: var(--ide-warning);
+  --color-ide-info: var(--ide-info);
+  --color-ide-info-bright: var(--ide-info-bright);
+  --color-ide-success: var(--ide-success);
+  --color-ide-file-v: var(--ide-file-v);
+  --color-ide-file-sv: var(--ide-file-sv);
+  --color-ide-file-xdc: var(--ide-file-xdc);
+  --color-ide-file-yaml: var(--ide-file-yaml);
+  --color-ide-file-md: var(--ide-file-md);
+  --color-ide-syntax-keyword: var(--ide-syntax-keyword);
+  --color-ide-syntax-function: var(--ide-syntax-function);
+  --color-ide-syntax-number: var(--ide-syntax-number);
+  --color-ide-syntax-string: var(--ide-syntax-string);
+  --color-ide-syntax-folder: var(--ide-syntax-folder);
+  --color-ide-cursor: var(--ide-cursor);
+  --color-ide-pro: var(--ide-pro);
+  --color-ide-online: var(--ide-online);
+  --color-ide-close: var(--ide-close);
+  --color-ide-chat-bg: var(--ide-chat-bg);
+  --color-ide-chat-dropdown: var(--ide-chat-dropdown);
+  --color-ide-chat-hover: var(--ide-chat-hover);
+  --color-ide-chat-input: var(--ide-chat-input);
+  --color-ide-chat-border: var(--ide-chat-border);
+  --color-ide-chat-muted: var(--ide-chat-muted);
+  --color-ide-chat-text: var(--ide-chat-text);
+  --color-ide-chat-purple: var(--ide-chat-purple);
+  --color-ide-chat-purple-hover: var(--ide-chat-purple-hover);
+  --color-ide-chat-cyan: var(--ide-chat-cyan);
+  --color-ide-chat-text-bright: var(--ide-chat-text-bright);
+  --color-ide-chat-input-border: var(--ide-chat-input-border);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

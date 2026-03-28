@@ -33,36 +33,35 @@ export function StatusBar({ activeFileId, cursorLine, cursorCol }: StatusBarProp
 
   return (
     <div
-      className="flex items-center h-6 bg-[#B51FB7] text-white shrink-0 overflow-hidden"
-      style={{ userSelect: 'none' }}
+      className="flex items-center h-6 bg-ide-accent text-white shrink-0 overflow-hidden select-none"
     >
       {/* Left section */}
       <div className="flex items-center h-full">
         {/* Branch */}
-        <div className="flex items-center gap-1 px-2.5 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
+        <div className="flex items-center gap-1 px-2.5 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
           <GitBranch size={12} />
-          <span style={{ fontSize: '11px' }}>main</span>
+          <span className="text-[11px]">main</span>
         </div>
         {/* Sync */}
-        <div className="flex items-center gap-1 px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
+        <div className="flex items-center gap-1 px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
           <CheckCircle2 size={11} />
-          <span style={{ fontSize: '11px' }}>Sync</span>
+          <span className="text-[11px]">Sync</span>
         </div>
         {/* Errors / Warnings */}
-        <div className="flex items-center gap-2.5 px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
+        <div className="flex items-center gap-2.5 px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
           <div className="flex items-center gap-1">
             <AlertCircle size={11} />
-            <span style={{ fontSize: '11px' }}>{errorCount}</span>
+            <span className="text-[11px]">{errorCount}</span>
           </div>
           <div className="flex items-center gap-1">
             <AlertTriangle size={11} />
-            <span style={{ fontSize: '11px' }}>{warnCount}</span>
+            <span className="text-[11px]">{warnCount}</span>
           </div>
         </div>
         {/* Verilator status */}
-        <div className="flex items-center gap-1 px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
+        <div className="flex items-center gap-1 px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
           <Zap size={11} />
-          <span style={{ fontSize: '11px' }}>Verilator 5.024</span>
+          <span className="text-[11px]">Verilator 5.024</span>
         </div>
       </div>
 
@@ -71,29 +70,29 @@ export function StatusBar({ activeFileId, cursorLine, cursorCol }: StatusBarProp
       {/* Right section */}
       <div className="flex items-center h-full">
         {/* Cursor position */}
-        <div className="flex items-center px-2.5 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
-          <span style={{ fontSize: '11px' }}>
+        <div className="flex items-center px-2.5 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
+          <span className="text-[11px]">
             Ln {cursorLine}, Col {cursorCol}
           </span>
         </div>
         {/* Indentation */}
-        <div className="flex items-center px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
-          <span style={{ fontSize: '11px' }}>Spaces: 4</span>
+        <div className="flex items-center px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
+          <span className="text-[11px]">Spaces: 4</span>
         </div>
         {/* Encoding */}
-        <div className="flex items-center px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
-          <span style={{ fontSize: '11px' }}>UTF-8</span>
+        <div className="flex items-center px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
+          <span className="text-[11px]">UTF-8</span>
         </div>
         {/* EOL */}
-        <div className="flex items-center px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
-          <span style={{ fontSize: '11px' }}>LF</span>
+        <div className="flex items-center px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
+          <span className="text-[11px]">LF</span>
         </div>
         {/* Language */}
-        <div className="flex items-center px-2.5 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
-          <span style={{ fontSize: '11px' }}>{lang}</span>
+        <div className="flex items-center px-2.5 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
+          <span className="text-[11px]">{lang}</span>
         </div>
         {/* Notifications */}
-        <div className="flex items-center px-2 h-full hover:bg-[#1f8ad2] cursor-pointer transition-colors">
+        <div className="flex items-center px-2 h-full hover:bg-ide-status-hover cursor-pointer transition-colors">
           <Bell size={12} />
         </div>
       </div>

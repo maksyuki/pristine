@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { AsyncChannels } from './channels.js';
-import { validatePathWithinRoot, assertString } from './validators.js';
+import { validatePathWithinRoot, assertString, assertValidEncoding } from './validators.js';
 
 let projectRoot: string | null = null;
 
@@ -20,6 +20,7 @@ function getRoot(): string {
 export function registerFilesystemHandlers(): void {
   ipcMain.handle(AsyncChannels.FS_READ_FILE, async (_event, filePath: unknown, encoding?: unknown) => {
     assertString(filePath, 'filePath');
+    assertValidEncoding(encoding, 'encoding');
     const resolved = validatePathWithinRoot(getRoot(), filePath);
     const enc = (encoding as BufferEncoding) ?? 'utf-8';
     return fs.readFile(resolved, { encoding: enc });

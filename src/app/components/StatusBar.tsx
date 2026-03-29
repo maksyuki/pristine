@@ -3,6 +3,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { problemsList } from '../../data/mockData';
+import { getEditorLanguageLabel } from '../workspace/workspaceFiles';
 
 interface StatusBarProps {
   activeFileId: string;
@@ -13,23 +14,7 @@ interface StatusBarProps {
 export function StatusBar({ activeFileId, cursorLine, cursorCol }: StatusBarProps) {
   const errorCount = problemsList.filter((p) => p.severity === 'error').length;
   const warnCount = problemsList.filter((p) => p.severity === 'warning').length;
-
-  const langMap: Record<string, string> = {
-    uart_tx: 'Verilog',
-    alu: 'Verilog',
-    cpu_top: 'Verilog',
-    reg_file: 'Verilog',
-    ctrl: 'Verilog',
-    tb_cpu: 'SystemVerilog',
-    tb_uart: 'SystemVerilog',
-    tb_alu: 'SystemVerilog',
-    timing: 'XDC',
-    proj_yml: 'YAML',
-    readme: 'Markdown',
-    spi_master: 'Verilog',
-  };
-
-  const lang = langMap[activeFileId] || 'Verilog';
+  const lang = activeFileId ? getEditorLanguageLabel(activeFileId) : 'Plain Text';
 
   return (
     <div

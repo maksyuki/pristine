@@ -68,6 +68,14 @@ export function getEditorLanguage(filePath: string): string {
     return 'markdown';
   }
 
+  if (lowerCased.endsWith('.c') || lowerCased.endsWith('.h')) {
+    return 'c';
+  }
+
+  if (lowerCased.endsWith('.cpp') || lowerCased.endsWith('.hpp')) {
+    return 'cpp';
+  }
+
   if (lowerCased.endsWith('.json')) {
     return 'json';
   }
@@ -78,6 +86,14 @@ export function getEditorLanguage(filePath: string): string {
 
   if (lowerCased.endsWith('.xml') || lowerCased.endsWith('.xdc')) {
     return 'xml';
+  }
+
+  if (lowerCased.endsWith('.sdc')) {
+    return 'plaintext';
+  }
+
+  if (lowerCased.endsWith('.tcl')) {
+    return 'plaintext';
   }
 
   if (lowerCased.endsWith('.ts') || lowerCased.endsWith('.tsx')) {
@@ -93,6 +109,70 @@ export function getEditorLanguage(filePath: string): string {
   }
 
   return 'plaintext';
+}
+
+export function getEditorLanguageLabel(filePath: string): string {
+  const normalized = normalizeWorkspacePath(filePath).toLowerCase();
+
+  if (normalized.endsWith('.xdc')) {
+    return 'XDC';
+  }
+
+  if (normalized.endsWith('.sdc')) {
+    return 'SDC';
+  }
+
+  if (normalized.endsWith('.tcl')) {
+    return 'Tcl';
+  }
+
+  const language = getEditorLanguage(filePath);
+
+  if (language === 'systemverilog') {
+    return 'SystemVerilog';
+  }
+
+  if (language === 'verilog') {
+    return 'Verilog';
+  }
+
+  if (language === 'markdown') {
+    return 'Markdown';
+  }
+
+  if (language === 'json') {
+    return 'JSON';
+  }
+
+  if (language === 'yaml') {
+    return 'YAML';
+  }
+
+  if (language === 'xml') {
+    return 'XML';
+  }
+
+  if (language === 'typescript') {
+    return 'TypeScript';
+  }
+
+  if (language === 'javascript') {
+    return 'JavaScript';
+  }
+
+  if (language === 'python') {
+    return 'Python';
+  }
+
+  if (language === 'c') {
+    return 'C';
+  }
+
+  if (language === 'cpp') {
+    return 'C++';
+  }
+
+  return 'Plain Text';
 }
 
 export function toTreeTestId(path: string): string {

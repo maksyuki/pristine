@@ -21,7 +21,7 @@ const { mockEditorInstance, mockModel, mockMonaco, mockEditorComponent } = vi.ho
       register: vi.fn(),
       setMonarchTokensProvider: vi.fn(),
       registerCompletionItemProvider: vi.fn(),
-      CompletionItemKind: { Keyword: 'keyword' },
+      CompletionItemKind: { Keyword: 'keyword', Variable: 'variable' },
     },
     editor: {
       defineTheme: vi.fn(),
@@ -133,6 +133,81 @@ describe('EditorArea', () => {
     expect(screen.getByTestId('editor-tab-badge-build/Makefile')).toHaveTextContent('MK');
   });
 
+  it('routes assembly files to the assembly language and registers assembly highlighting', async () => {
+    render(
+      <EditorArea
+        tabs={[{ id: 'startup/crt0.S', name: 'crt0.S' }]}
+        activeTabId="startup/crt0.S"
+        onTabChange={vi.fn()}
+        onTabClose={vi.fn()}
+        editorRef={createRef()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('startup/crt0.S', 'utf-8');
+    });
+
+    expect(screen.getByTestId('editor-tab-badge-startup/crt0.S')).toHaveTextContent('AS');
+    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'assembly');
+    expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'assembly', extensions: ['.s', '.S'] });
+    expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('assembly', expect.any(Object));
+    expect(mockMonaco.languages.registerCompletionItemProvider).toHaveBeenCalledWith('assembly', expect.any(Object));
+  });
+
+  it('routes shell, Tcl, and constraint files to dedicated highlighted editor languages', async () => {
+    const { rerender } = render(
+      <EditorArea
+        tabs={[{ id: 'scripts/deploy.sh', name: 'deploy.sh' }]}
+        activeTabId="scripts/deploy.sh"
+        onTabChange={vi.fn()}
+        onTabClose={vi.fn()}
+        editorRef={createRef()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('scripts/deploy.sh', 'utf-8');
+    });
+    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'shell');
+    expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'shell', extensions: ['.sh'] });
+    expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('shell', expect.any(Object));
+
+    rerender(
+      <EditorArea
+        tabs={[{ id: 'scripts/build.tcl', name: 'build.tcl' }]}
+        activeTabId="scripts/build.tcl"
+        onTabChange={vi.fn()}
+        onTabClose={vi.fn()}
+        editorRef={createRef()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('scripts/build.tcl', 'utf-8');
+    });
+    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'tcl');
+    expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'tcl', extensions: ['.tcl'] });
+    expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('tcl', expect.any(Object));
+
+    rerender(
+      <EditorArea
+        tabs={[{ id: 'constraints/top.xdc', name: 'top.xdc' }]}
+        activeTabId="constraints/top.xdc"
+        onTabChange={vi.fn()}
+        onTabClose={vi.fn()}
+        editorRef={createRef()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('constraints/top.xdc', 'utf-8');
+    });
+    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'constraints');
+    expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'constraints', extensions: ['.xdc', '.sdc'] });
+    expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('constraints', expect.any(Object));
+  });
+
   it('configures monaco, loads file content, reacts to cursor changes, and jumps to the target line', async () => {
     const onCursorChange = vi.fn();
     const editorRef = createRef<any>();
@@ -157,7 +232,7 @@ describe('EditorArea', () => {
     expect(screen.getByText('retroSoC')).toBeInTheDocument();
     expect(screen.getAllByText('tb_cpu_top.sv')).toHaveLength(2);
     expect(mockMonaco.languages.register).toHaveBeenCalled();
-    expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledTimes(2);
+    expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledTimes(6);
     expect(mockMonaco.editor.defineTheme).toHaveBeenCalled();
     expect(mockMonaco.editor.setModelMarkers).toHaveBeenCalledWith(
       mockModel,

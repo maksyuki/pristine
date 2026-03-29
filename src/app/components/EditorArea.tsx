@@ -45,6 +45,41 @@ const verilogKeywords = [
   'constraint', 'rand', 'randc', 'randomize',
 ];
 
+const assemblyKeywords = [
+  'mov', 'add', 'sub', 'mul', 'div', 'and', 'orr', 'eor', 'xor', 'not', 'cmp', 'cmn',
+  'tst', 'teq', 'b', 'bl', 'bx', 'beq', 'bne', 'bgt', 'blt', 'bge', 'ble', 'jmp', 'call',
+  'ret', 'push', 'pop', 'ldr', 'ldrb', 'ldrh', 'str', 'strb', 'strh', 'lea', 'nop', 'svc',
+  'syscall', 'section', 'global', 'globl', 'extern', 'equ', 'byte', 'word', 'long', 'quad',
+  'ascii', 'asciz', 'string', 'align', 'space', 'fill', 'org', 'macro', 'endm', 'include',
+];
+
+const assemblyRegisters = [
+  'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13',
+  'r14', 'r15', 'sp', 'lr', 'pc', 'a0', 'a1', 'a2', 'a3', 'v0', 'v1', 't0', 't1', 't2',
+  't3', 't4', 't5', 't6', 't7', 't8', 't9', 's0', 's1', 's2', 's3', 's4', 's5', 's6', 's7',
+  'ra', 'fp', 'gp', 'ip', 'x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10',
+  'x11', 'x12', 'x13', 'x14', 'x15', 'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23',
+  'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'zr',
+];
+
+const shellKeywords = [
+  'if', 'then', 'else', 'elif', 'fi', 'for', 'while', 'until', 'do', 'done', 'case', 'esac',
+  'function', 'in', 'select', 'time', 'coproc', 'readonly', 'local', 'export', 'unset', 'return',
+  'break', 'continue', 'shift', 'trap', 'source', 'alias', 'eval', 'exec', 'exit', 'test',
+];
+
+const tclKeywords = [
+  'set', 'unset', 'proc', 'return', 'if', 'elseif', 'else', 'while', 'for', 'foreach', 'switch',
+  'break', 'continue', 'uplevel', 'upvar', 'global', 'variable', 'namespace', 'eval', 'expr',
+  'format', 'puts', 'source', 'file', 'list', 'dict', 'lindex', 'llength', 'append', 'incr',
+];
+
+const constraintKeywords = [
+  'create_clock', 'create_generated_clock', 'set_clock_groups', 'set_false_path', 'set_max_delay',
+  'set_min_delay', 'set_multicycle_path', 'set_input_delay', 'set_output_delay', 'set_property',
+  'get_ports', 'get_pins', 'get_cells', 'get_nets', 'get_clocks', 'current_design', 'current_instance',
+];
+
 function useVerilogLanguage(monaco: any) {
   useEffect(() => {
     if (!monaco) return;
@@ -56,6 +91,18 @@ function useVerilogLanguage(monaco: any) {
     }
     if (!langs.find((l: any) => l.id === 'systemverilog')) {
       monaco.languages.register({ id: 'systemverilog', extensions: ['.sv', '.svh'] });
+    }
+    if (!langs.find((l: any) => l.id === 'assembly')) {
+      monaco.languages.register({ id: 'assembly', extensions: ['.s', '.S'] });
+    }
+    if (!langs.find((l: any) => l.id === 'shell')) {
+      monaco.languages.register({ id: 'shell', extensions: ['.sh'] });
+    }
+    if (!langs.find((l: any) => l.id === 'tcl')) {
+      monaco.languages.register({ id: 'tcl', extensions: ['.tcl'] });
+    }
+    if (!langs.find((l: any) => l.id === 'constraints')) {
+      monaco.languages.register({ id: 'constraints', extensions: ['.xdc', '.sdc'] });
     }
 
     const tokenProvider = {
@@ -105,8 +152,127 @@ function useVerilogLanguage(monaco: any) {
       },
     };
 
+    const assemblyTokenProvider = {
+      defaultToken: '',
+      keywords: assemblyKeywords,
+      registers: assemblyRegisters,
+      tokenizer: {
+        root: [
+          [/^[A-Za-z_.$][\w.$]*:/, 'type'],
+          [/[;#].*$/, 'comment'],
+          [/\/\/.+$/, 'comment'],
+          [/\.[A-Za-z_][\w.]*/, 'keyword.control'],
+          [/[%$@][A-Za-z_][\w]*/, 'variable'],
+          [/0x[0-9a-fA-F]+/, 'number'],
+          [/\b\d+\b/, 'number'],
+          [/"([^"\\]|\\.)*$/, 'string.invalid'],
+          [/"/, 'string', '@string'],
+          [/[A-Za-z_.][\w.]*/, {
+            cases: {
+              '@keywords': 'keyword',
+              '@registers': 'type',
+              '@default': 'identifier',
+            },
+          }],
+          [/[{}()\[\]]/, '@brackets'],
+          [/[,:]/, 'delimiter'],
+          [/[+-/*%&|^~!=<>]+/, 'operator'],
+        ],
+        string: [
+          [/[^\\"]+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/"/, 'string', '@pop'],
+        ],
+      },
+    };
+
+    const shellTokenProvider = {
+      defaultToken: '',
+      keywords: shellKeywords,
+      tokenizer: {
+        root: [
+          [/#.*$/, 'comment'],
+          [/\$\{?[A-Za-z_][\w]*\}?/, 'variable'],
+          [/\b\d+\b/, 'number'],
+          [/"([^"\\]|\\.)*$/, 'string.invalid'],
+          [/"/, 'string', '@string'],
+          [/'[^']*'/, 'string'],
+          [/[A-Za-z_][\w-]*/, {
+            cases: {
+              '@keywords': 'keyword',
+              '@default': 'identifier',
+            },
+          }],
+          [/[|&;()<>]/, 'operator'],
+        ],
+        string: [
+          [/[^\\"]+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/"/, 'string', '@pop'],
+        ],
+      },
+    };
+
+    const tclTokenProvider = {
+      defaultToken: '',
+      keywords: tclKeywords,
+      tokenizer: {
+        root: [
+          [/#.*$/, 'comment'],
+          [/\$\{?[A-Za-z_][\w:]*\}?/, 'variable'],
+          [/\b\d+\b/, 'number'],
+          [/"([^"\\]|\\.)*$/, 'string.invalid'],
+          [/"/, 'string', '@string'],
+          [/-[A-Za-z_][\w-]*/, 'type'],
+          [/[A-Za-z_][\w:]*/, {
+            cases: {
+              '@keywords': 'keyword',
+              '@default': 'identifier',
+            },
+          }],
+          [/[{}\[\]]/, '@brackets'],
+        ],
+        string: [
+          [/[^\\"]+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/"/, 'string', '@pop'],
+        ],
+      },
+    };
+
+    const constraintsTokenProvider = {
+      defaultToken: '',
+      keywords: constraintKeywords,
+      tokenizer: {
+        root: [
+          [/#.*$/, 'comment'],
+          [/\$\{?[A-Za-z_][\w:]*\}?/, 'variable'],
+          [/\b\d+(\.\d+)?\b/, 'number'],
+          [/"([^"\\]|\\.)*$/, 'string.invalid'],
+          [/"/, 'string', '@string'],
+          [/-[A-Za-z_][\w-]*/, 'type'],
+          [/[A-Za-z_][\w:]*/, {
+            cases: {
+              '@keywords': 'keyword',
+              '@default': 'identifier',
+            },
+          }],
+          [/[{}\[\]]/, '@brackets'],
+        ],
+        string: [
+          [/[^\\"]+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/"/, 'string', '@pop'],
+        ],
+      },
+    };
+
     monaco.languages.setMonarchTokensProvider('verilog', tokenProvider as any);
     monaco.languages.setMonarchTokensProvider('systemverilog', tokenProvider as any);
+    monaco.languages.setMonarchTokensProvider('assembly', assemblyTokenProvider as any);
+    monaco.languages.setMonarchTokensProvider('shell', shellTokenProvider as any);
+    monaco.languages.setMonarchTokensProvider('tcl', tclTokenProvider as any);
+    monaco.languages.setMonarchTokensProvider('constraints', constraintsTokenProvider as any);
 
     // Completion provider
     monaco.languages.registerCompletionItemProvider('verilog', {
@@ -123,6 +289,93 @@ function useVerilogLanguage(monaco: any) {
           },
         }));
         return { suggestions };
+      },
+    });
+    monaco.languages.registerCompletionItemProvider('assembly', {
+      provideCompletionItems: (model: any, position: any) => {
+        const currentWord = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: currentWord.startColumn,
+          endColumn: position.column,
+        };
+
+        const keywordSuggestions = assemblyKeywords.map((keyword) => ({
+          label: keyword,
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: keyword,
+          range,
+        }));
+
+        const registerSuggestions = assemblyRegisters.map((register) => ({
+          label: register,
+          kind: monaco.languages.CompletionItemKind.Variable,
+          insertText: register,
+          range,
+        }));
+
+        return { suggestions: [...keywordSuggestions, ...registerSuggestions] };
+      },
+    });
+    monaco.languages.registerCompletionItemProvider('shell', {
+      provideCompletionItems: (model: any, position: any) => {
+        const currentWord = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: currentWord.startColumn,
+          endColumn: position.column,
+        };
+
+        return {
+          suggestions: shellKeywords.map((keyword) => ({
+            label: keyword,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: keyword,
+            range,
+          })),
+        };
+      },
+    });
+    monaco.languages.registerCompletionItemProvider('tcl', {
+      provideCompletionItems: (model: any, position: any) => {
+        const currentWord = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: currentWord.startColumn,
+          endColumn: position.column,
+        };
+
+        return {
+          suggestions: tclKeywords.map((keyword) => ({
+            label: keyword,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: keyword,
+            range,
+          })),
+        };
+      },
+    });
+    monaco.languages.registerCompletionItemProvider('constraints', {
+      provideCompletionItems: (model: any, position: any) => {
+        const currentWord = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: currentWord.startColumn,
+          endColumn: position.column,
+        };
+
+        return {
+          suggestions: constraintKeywords.map((keyword) => ({
+            label: keyword,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: keyword,
+            range,
+          })),
+        };
       },
     });
 

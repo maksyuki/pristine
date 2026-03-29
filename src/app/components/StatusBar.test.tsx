@@ -25,7 +25,13 @@ describe('StatusBar', () => {
     rerender(<StatusBar activeFileId="scripts/build.tcl" cursorLine={1} cursorCol={1} />);
     expect(screen.getByText('Tcl')).toBeInTheDocument();
 
+    rerender(<StatusBar activeFileId="scripts/deploy.sh" cursorLine={1} cursorCol={1} />);
+    expect(screen.getByText('Shell')).toBeInTheDocument();
+
     rerender(<StatusBar activeFileId="config/project.json" cursorLine={1} cursorCol={1} />);
     expect(screen.getByText('JSON')).toBeInTheDocument();
+
+    rerender(<StatusBar activeFileId="startup/crt0.s" cursorLine={1} cursorCol={1} />);
+    expect(screen.getByText('Assembly')).toBeInTheDocument();
   });
 });

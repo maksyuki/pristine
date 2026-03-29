@@ -56,6 +56,22 @@ export function getEditorLanguage(filePath: string): string {
   const normalized = normalizeWorkspacePath(filePath);
   const lowerCased = normalized.toLowerCase();
 
+  if (lowerCased.endsWith('.s')) {
+    return 'assembly';
+  }
+
+  if (lowerCased.endsWith('.sh')) {
+    return 'shell';
+  }
+
+  if (lowerCased.endsWith('.tcl')) {
+    return 'tcl';
+  }
+
+  if (lowerCased.endsWith('.sdc') || lowerCased.endsWith('.xdc')) {
+    return 'constraints';
+  }
+
   if (lowerCased.endsWith('.sv') || lowerCased.endsWith('.svh')) {
     return 'systemverilog';
   }
@@ -84,16 +100,8 @@ export function getEditorLanguage(filePath: string): string {
     return 'yaml';
   }
 
-  if (lowerCased.endsWith('.xml') || lowerCased.endsWith('.xdc')) {
+  if (lowerCased.endsWith('.xml')) {
     return 'xml';
-  }
-
-  if (lowerCased.endsWith('.sdc')) {
-    return 'plaintext';
-  }
-
-  if (lowerCased.endsWith('.tcl')) {
-    return 'plaintext';
   }
 
   if (lowerCased.endsWith('.ts') || lowerCased.endsWith('.tsx')) {
@@ -113,6 +121,14 @@ export function getEditorLanguage(filePath: string): string {
 
 export function getEditorLanguageLabel(filePath: string): string {
   const normalized = normalizeWorkspacePath(filePath).toLowerCase();
+
+  if (normalized.endsWith('.s')) {
+    return 'Assembly';
+  }
+
+  if (normalized.endsWith('.sh')) {
+    return 'Shell';
+  }
 
   if (normalized.endsWith('.xdc')) {
     return 'XDC';
@@ -150,6 +166,14 @@ export function getEditorLanguageLabel(filePath: string): string {
 
   if (language === 'xml') {
     return 'XML';
+  }
+
+  if (language === 'tcl') {
+    return 'Tcl';
+  }
+
+  if (language === 'constraints') {
+    return 'Constraints';
   }
 
   if (language === 'typescript') {

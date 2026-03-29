@@ -3,16 +3,70 @@ import { describe, expect, it, vi } from 'vitest';
 import { ActivityBar } from './ActivityBar';
 
 describe('ActivityBar', () => {
-  it('renders navigation items and switches active view', () => {
-    const onViewChange = vi.fn();
+  it('renders compile, run, and debug action buttons and removes settings', () => {
+    render(<ActivityBar activeView="explorer" onItemSelect={vi.fn()} />);
 
-    render(<ActivityBar activeView="explorer" onViewChange={onViewChange} />);
+    const buttons = [
+      screen.getByTestId('activity-action-compile'),
+      screen.getByTestId('activity-action-run'),
+      screen.getByTestId('activity-action-debug-action'),
+    ];
 
-    const searchButton = screen.getByTitle('Search');
-    fireEvent.click(searchButton);
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual(['Compile', 'Run', 'Debug']);
+    expect(screen.queryByTitle('Settings')).not.toBeInTheDocument();
+    expect(screen.getByTitle('Explorer')).toBeInTheDocument();
+    expect(screen.getByTitle('Source Control')).toBeInTheDocument();
+    expect(screen.getByTitle('Run & Debug')).toBeInTheDocument();
+    expect(screen.queryByTitle('Search')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Extensions')).not.toBeInTheDocument();
+  });
 
-    expect(onViewChange).toHaveBeenCalledWith('search');
-    expect(screen.getByText('Explorer')).toBeInTheDocument();
-    expect(screen.getByText('Source Control')).toBeInTheDocument();
+  it('does not apply pressed state or call the shared navigation handler when compile, run, and debug are clicked', () => {
+    const onItemSelect = vi.fn();
+
+    render(<ActivityBar activeView="explorer" onItemSelect={onItemSelect} />);
+
+    const compileButton = screen.getByTestId('activity-action-compile');
+    const runButton = screen.getByTestId('activity-action-run');
+    const debugButton = screen.getByTestId('activity-action-debug-action');
+
+    expect(compileButton).not.toHaveAttribute('aria-pressed');
+    expect(runButton).not.toHaveAttribute('aria-pressed');
+    expect(debugButton).not.toHaveAttribute('aria-pressed');
+
+    fireEvent.click(runButton);
+    fireEvent.click(debugButton);
+
+    expect(compileButton).not.toHaveAttribute('aria-pressed');
+    expect(runButton).not.toHaveAttribute('aria-pressed');
+    expect(debugButton).not.toHaveAttribute('aria-pressed');
+    expect(onItemSelect).not.toHaveBeenCalled();
+  });
+
+  it('forwards clicked item ids to the shared selection handler', () => {
+    const onItemSelect = vi.fn();
+
+    render(<ActivityBar activeView="explorer" onItemSelect={onItemSelect} />);
+
+    fireEvent.click(screen.getByTestId('activity-item-git'));
+    fireEvent.click(screen.getByTestId('activity-item-explorer'));
+
+    expect(onItemSelect).toHaveBeenNthCalledWith(1, 'git');
+    expect(onItemSelect).toHaveBeenNthCalledWith(2, 'explorer');
+  });
+
+  it('uses the unselected button style for the active item when the left sidebar is hidden', () => {
+    render(
+      <ActivityBar
+        activeView="explorer"
+        onItemSelect={vi.fn()}
+        isLeftSidebarHidden
+      />,
+    );
+
+    const explorerButton = screen.getByTestId('activity-item-explorer');
+
+    expect(explorerButton).toHaveClass('text-ide-text-muted', 'border-transparent');
+    expect(explorerButton).not.toHaveClass('text-white', 'border-ide-accent');
   });
 });

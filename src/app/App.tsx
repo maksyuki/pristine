@@ -34,6 +34,18 @@ function AppLayout() {
     cursorLine, cursorCol,
   } = useWorkspace();
 
+  const handleActivityItemSelect = (nextView: string) => {
+    if (nextView === activeView) {
+      setShowLeftPanel(!showLeftPanel);
+      return;
+    }
+
+    setActiveView(nextView);
+    if (!showLeftPanel) {
+      setShowLeftPanel(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-ide-bg text-ide-text overflow-hidden">
       <MenuBar
@@ -46,7 +58,11 @@ function AppLayout() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <ActivityBar activeView={activeView} onViewChange={setActiveView} />
+        <ActivityBar
+          activeView={activeView}
+          onItemSelect={handleActivityItemSelect}
+          isLeftSidebarHidden={!showLeftPanel}
+        />
 
         <PanelGroup direction="horizontal" className="flex-1">
           {showLeftPanel && (

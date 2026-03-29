@@ -46,7 +46,7 @@ export function LeftSidePanel({ activeFileId, onFileOpen, onLineJump, currentOut
   const warnCount = useMemo(() => problemsList.filter((p) => p.severity === 'warning').length, []);
 
   return (
-    <div className="flex flex-col h-full bg-ide-sidebar-bg overflow-hidden">
+    <div className="ide-sidebar-scope flex flex-col h-full bg-ide-sidebar-bg overflow-hidden">
       {/* Tab bar */}
       <div className="flex shrink-0 border-b border-ide-border">
         {(['explorer', 'outline', 'problems'] as const).map((t) => (

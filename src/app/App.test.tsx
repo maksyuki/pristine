@@ -29,10 +29,11 @@ vi.mock('./components/MenuBar', () => ({
 }));
 
 vi.mock('./components/ActivityBar', () => ({
-  ActivityBar: ({ activeView, onViewChange }: { activeView: string; onViewChange: (view: string) => void }) => (
+  ActivityBar: ({ activeView, onItemSelect }: { activeView: string; onItemSelect: (view: string) => void }) => (
     <div>
       <span data-testid="activity-view">{activeView}</span>
-      <button onClick={() => onViewChange('search')}>switch-activity</button>
+      <button onClick={() => onItemSelect('git')}>select-git</button>
+      <button onClick={() => onItemSelect('explorer')}>select-explorer</button>
     </div>
   ),
 }));
@@ -99,8 +100,8 @@ describe('App', () => {
     expect(screen.getByTestId('editor-tab-count')).toHaveTextContent('0');
     expect(screen.getByTestId('status-bar')).toHaveTextContent(':1:1');
 
-    fireEvent.click(screen.getByText('switch-activity'));
-    expect(screen.getByTestId('activity-view')).toHaveTextContent('search');
+    fireEvent.click(screen.getByText('select-git'));
+    expect(screen.getByTestId('activity-view')).toHaveTextContent('git');
 
     fireEvent.click(screen.getByText('left-open'));
     expect(screen.getByTestId('editor-active-tab')).toHaveTextContent('rtl/core/reg_file.v');
@@ -127,8 +128,13 @@ describe('App', () => {
     fireEvent.click(screen.getByText('close-bottom'));
     expect(screen.queryByTestId('bottom-panel')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('toggle-left-panel'));
+    fireEvent.click(screen.getByText('select-git'));
     expect(screen.getByTestId('menu-left-state')).toHaveTextContent('false');
     expect(screen.queryByTestId('left-panel')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('select-explorer'));
+    expect(screen.getByTestId('activity-view')).toHaveTextContent('explorer');
+    expect(screen.getByTestId('menu-left-state')).toHaveTextContent('true');
+    expect(screen.getByTestId('left-panel')).toBeInTheDocument();
   });
 });

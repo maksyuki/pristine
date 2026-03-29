@@ -76,3 +76,59 @@ test('explorer opens a file into a new editor tab', async () => {
 
   await app.close();
 });
+
+test('activity bar removes search and extensions and toggles the left sidebar', async () => {
+  const { app, window } = await launchApp();
+
+  await expect(window.getByTestId('activity-item-explorer')).toBeVisible();
+  await expect(window.getByTestId('activity-item-git')).toBeVisible();
+  await expect(window.getByTestId('activity-item-debug')).toBeVisible();
+  await expect(window.getByTestId('activity-item-search')).toHaveCount(0);
+  await expect(window.getByTestId('activity-item-extensions')).toHaveCount(0);
+
+  const explorerFileNode = window.getByTestId('file-tree-node-README_md');
+  await expect(explorerFileNode).toBeVisible();
+
+  const explorerButton = window.getByTestId('activity-item-explorer');
+  await explorerButton.click();
+  await expect(explorerFileNode).toHaveCount(0);
+  await expect(explorerButton).toHaveClass(/border-ide-accent/);
+
+  const sourceControlButton = window.getByTestId('activity-item-git');
+  await sourceControlButton.click();
+  await expect(explorerFileNode).toBeVisible();
+  await expect(sourceControlButton).toHaveClass(/border-ide-accent/);
+
+  await sourceControlButton.click();
+  await expect(explorerFileNode).toHaveCount(0);
+  await expect(sourceControlButton).toHaveClass(/border-ide-accent/);
+
+  await app.close();
+});
+
+test('activity bar shows compile, run, and debug action buttons with local selection only', async () => {
+  const { app, window } = await launchApp();
+
+  const compileButton = window.getByTestId('activity-action-compile');
+  const runButton = window.getByTestId('activity-action-run');
+  const debugButton = window.getByTestId('activity-action-debug-action');
+
+  await expect(window.getByTitle('Settings')).toHaveCount(0);
+  await expect(compileButton).toBeVisible();
+  await expect(runButton).toBeVisible();
+  await expect(debugButton).toBeVisible();
+
+  await expect(compileButton).not.toHaveAttribute('aria-pressed', /.+/);
+  await expect(runButton).not.toHaveAttribute('aria-pressed', /.+/);
+  await expect(debugButton).not.toHaveAttribute('aria-pressed', /.+/);
+
+  await runButton.click();
+  await debugButton.click();
+  await expect(compileButton).not.toHaveAttribute('aria-pressed', /.+/);
+  await expect(runButton).not.toHaveAttribute('aria-pressed', /.+/);
+  await expect(debugButton).not.toHaveAttribute('aria-pressed', /.+/);
+
+  await expect(window.getByTestId('activity-item-explorer')).toHaveClass(/border-ide-accent/);
+
+  await app.close();
+});

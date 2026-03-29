@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  ChevronDown, Folder, GitBranch, Globe, Search,
+  ChevronDown, Folder, GitBranch, Globe,
   ChevronLeft, ChevronRight, PanelLeft, PanelBottom, Columns2,
   Settings, CircleUser, Minus, Square, X, Zap,
 } from 'lucide-react';
@@ -174,15 +174,6 @@ export function MenuBar({
             </div>
           )}
         </div>
-
-        {/* Divider */}
-        <div className="w-px h-4 bg-ide-text-dim mx-1" />
-
-        {/* Search */}
-        <button className="flex items-center gap-1.5 px-10 h-full text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
-          <Search size={13} />
-          <span className="text-ide-text-muted text-[12px]">Search</span>
-        </button>
 
         {/* Divider */}
         <div className="w-px h-4 bg-ide-text-dim mx-1" />

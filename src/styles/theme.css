@@ -279,6 +279,10 @@
     @apply border-border outline-ring/50;
   }
 
+  .ide-sidebar-scope button {
+    cursor: pointer;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

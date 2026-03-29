@@ -23,7 +23,7 @@ export function RightSidePanel({
   ] as const;
 
   return (
-    <div className="flex flex-col h-full bg-ide-sidebar-bg overflow-hidden">
+    <div className="ide-sidebar-scope flex flex-col h-full bg-ide-sidebar-bg overflow-hidden">
       {/* Tab bar */}
       <div className="flex shrink-0 border-b border-ide-border">
         {tabs.map((t) => (

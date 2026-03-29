@@ -47,7 +47,31 @@ const noDragInteractive = {
 };
 const isMacOS = window.electronAPI?.platform === 'darwin';
 
-export function MenuBar() {
+interface MenuBarProps {
+  showLeftPanel?: boolean;
+  showBottomPanel?: boolean;
+  showRightPanel?: boolean;
+  onToggleLeftPanel?: () => void;
+  onToggleBottomPanel?: () => void;
+  onToggleRightPanel?: () => void;
+}
+
+function getLayoutButtonClass(isActive: boolean) {
+  return `w-8 h-full flex items-center justify-center transition-colors ${
+    isActive
+      ? 'text-ide-text bg-ide-btn-hover'
+      : 'text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover'
+  }`;
+}
+
+export function MenuBar({
+  showLeftPanel = false,
+  showBottomPanel = false,
+  showRightPanel = false,
+  onToggleLeftPanel,
+  onToggleBottomPanel,
+  onToggleRightPanel,
+}: MenuBarProps) {
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [projectOpen, setProjectOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState('Select Project');
@@ -186,13 +210,34 @@ export function MenuBar() {
         <div className="w-px h-4 bg-ide-text-dim mx-1" />
 
         {/* Layout icons */}
-        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
+        <button
+          type="button"
+          aria-label="Toggle left sidebar"
+          aria-pressed={showLeftPanel}
+          data-testid="toggle-left-panel"
+          className={getLayoutButtonClass(showLeftPanel)}
+          onClick={onToggleLeftPanel}
+        >
           <PanelLeft size={15} />
         </button>
-        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
+        <button
+          type="button"
+          aria-label="Toggle bottom panel"
+          aria-pressed={showBottomPanel}
+          data-testid="toggle-bottom-panel"
+          className={getLayoutButtonClass(showBottomPanel)}
+          onClick={onToggleBottomPanel}
+        >
           <PanelBottom size={15} />
         </button>
-        <button className="w-8 h-full flex items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
+        <button
+          type="button"
+          aria-label="Toggle right sidebar"
+          aria-pressed={showRightPanel}
+          data-testid="toggle-right-panel"
+          className={getLayoutButtonClass(showRightPanel)}
+          onClick={onToggleRightPanel}
+        >
           <Columns2 size={15} />
         </button>
 

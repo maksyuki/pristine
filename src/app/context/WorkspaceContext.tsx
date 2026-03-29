@@ -25,8 +25,12 @@ interface WorkspaceState {
   cursorCol: number;
   setCursorPos: (line: number, col: number) => void;
 
+  showLeftPanel: boolean;
+  setShowLeftPanel: (show: boolean) => void;
   showBottomPanel: boolean;
   setShowBottomPanel: (show: boolean) => void;
+  showRightPanel: boolean;
+  setShowRightPanel: (show: boolean) => void;
 
   editorRef: React.MutableRefObject<any>;
 }
@@ -47,7 +51,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [activeView, setActiveView] = useState('explorer');
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState('');
-  const [showBottomPanel, setShowBottomPanel] = useState(true);
+  const [showLeftPanel, setShowLeftPanel] = useState(true);
+  const [showBottomPanel, setShowBottomPanel] = useState(false);
+  const [showRightPanel, setShowRightPanel] = useState(false);
   const [jumpToLine, setJumpToLine] = useState<number | undefined>();
   const [cursorLine, setCursorLine] = useState(1);
   const [cursorCol, setCursorCol] = useState(1);
@@ -93,7 +99,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       tabs, activeTabId, openFile, closeFile, setActiveTabId,
       jumpToLine, jumpTo,
       cursorLine, cursorCol, setCursorPos,
+      showLeftPanel, setShowLeftPanel,
       showBottomPanel, setShowBottomPanel,
+      showRightPanel, setShowRightPanel,
       editorRef,
     }}>
       {children}

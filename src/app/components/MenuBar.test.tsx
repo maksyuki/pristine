@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MenuBar } from './MenuBar';
 
 describe('MenuBar', () => {
@@ -22,5 +22,41 @@ describe('MenuBar', () => {
     fireEvent.click(screen.getByRole('button', { name: /git repo/i }));
 
     expect(screen.getByRole('button', { name: /git repo/i })).toBeInTheDocument();
+  });
+
+  it('calls the panel toggle callbacks from the layout icons', () => {
+    const onToggleLeftPanel = vi.fn();
+    const onToggleBottomPanel = vi.fn();
+    const onToggleRightPanel = vi.fn();
+
+    render(
+      <MenuBar
+        onToggleLeftPanel={onToggleLeftPanel}
+        onToggleBottomPanel={onToggleBottomPanel}
+        onToggleRightPanel={onToggleRightPanel}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('toggle-left-panel'));
+    fireEvent.click(screen.getByTestId('toggle-bottom-panel'));
+    fireEvent.click(screen.getByTestId('toggle-right-panel'));
+
+    expect(onToggleLeftPanel).toHaveBeenCalledTimes(1);
+    expect(onToggleBottomPanel).toHaveBeenCalledTimes(1);
+    expect(onToggleRightPanel).toHaveBeenCalledTimes(1);
+  });
+
+  it('reflects active panel visibility on the layout buttons', () => {
+    render(
+      <MenuBar
+        showLeftPanel
+        showBottomPanel={false}
+        showRightPanel
+      />,
+    );
+
+    expect(screen.getByTestId('toggle-left-panel')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('toggle-bottom-panel')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('toggle-right-panel')).toHaveAttribute('aria-pressed', 'true');
   });
 });

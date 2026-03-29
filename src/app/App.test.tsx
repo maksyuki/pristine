@@ -9,7 +9,23 @@ vi.mock('react-resizable-panels', () => ({
 }));
 
 vi.mock('./components/MenuBar', () => ({
-  MenuBar: () => <div data-testid="menu-bar">menu</div>,
+  MenuBar: ({
+    showLeftPanel,
+    showBottomPanel,
+    showRightPanel,
+    onToggleLeftPanel,
+    onToggleBottomPanel,
+    onToggleRightPanel,
+  }: any) => (
+    <div data-testid="menu-bar">
+      <span data-testid="menu-left-state">{String(showLeftPanel)}</span>
+      <span data-testid="menu-bottom-state">{String(showBottomPanel)}</span>
+      <span data-testid="menu-right-state">{String(showRightPanel)}</span>
+      <button onClick={onToggleLeftPanel}>toggle-left-panel</button>
+      <button onClick={onToggleBottomPanel}>toggle-bottom-panel</button>
+      <button onClick={onToggleRightPanel}>toggle-right-panel</button>
+    </div>
+  ),
 }));
 
 vi.mock('./components/ActivityBar', () => ({
@@ -23,7 +39,7 @@ vi.mock('./components/ActivityBar', () => ({
 
 vi.mock('./components/LeftSidePanel', () => ({
   LeftSidePanel: ({ activeFileId, currentOutlineId, onFileOpen, onLineJump }: any) => (
-    <div>
+    <div data-testid="left-panel">
       <span data-testid="left-active-file">{activeFileId}</span>
       <span data-testid="left-outline-file">{currentOutlineId}</span>
       <button onClick={() => { onFileOpen('rtl/core/reg_file.v', 'reg_file.v'); onLineJump(77); }}>left-open</button>
@@ -46,7 +62,7 @@ vi.mock('./components/EditorArea', () => ({
 
 vi.mock('./components/RightSidePanel', () => ({
   RightSidePanel: ({ onFileOpen, onLineJump }: any) => (
-    <div>
+    <div data-testid="right-panel">
       <button onClick={() => { onFileOpen('rtl/core/alu.v', 'alu.v'); onLineJump(33); }}>right-open</button>
     </div>
   ),
@@ -72,7 +88,13 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByTestId('menu-bar')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-left-state')).toHaveTextContent('true');
+    expect(screen.getByTestId('menu-bottom-state')).toHaveTextContent('false');
+    expect(screen.getByTestId('menu-right-state')).toHaveTextContent('false');
     expect(screen.getByTestId('activity-view')).toHaveTextContent('explorer');
+    expect(screen.getByTestId('left-panel')).toBeInTheDocument();
+    expect(screen.queryByTestId('bottom-panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('right-panel')).not.toBeInTheDocument();
     expect(screen.getByTestId('left-active-file')).toHaveTextContent('');
     expect(screen.getByTestId('editor-tab-count')).toHaveTextContent('0');
     expect(screen.getByTestId('status-bar')).toHaveTextContent(':1:1');
@@ -88,13 +110,25 @@ describe('App', () => {
     fireEvent.click(screen.getByText('editor-cursor'));
     expect(screen.getByTestId('status-bar')).toHaveTextContent('rtl/core/reg_file.v:9:3');
 
+    fireEvent.click(screen.getByText('toggle-right-panel'));
+    expect(screen.getByTestId('menu-right-state')).toHaveTextContent('true');
+    expect(screen.getByTestId('right-panel')).toBeInTheDocument();
+
     fireEvent.click(screen.getByText('right-open'));
     expect(screen.getByTestId('editor-tab-count')).toHaveTextContent('2');
 
     fireEvent.click(screen.getByText('editor-activate-alu'));
     expect(screen.getByTestId('editor-active-tab')).toHaveTextContent('rtl/core/alu.v');
 
+    fireEvent.click(screen.getByText('toggle-bottom-panel'));
+    expect(screen.getByTestId('menu-bottom-state')).toHaveTextContent('true');
+    expect(screen.getByTestId('bottom-panel')).toBeInTheDocument();
+
     fireEvent.click(screen.getByText('close-bottom'));
     expect(screen.queryByTestId('bottom-panel')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('toggle-left-panel'));
+    expect(screen.getByTestId('menu-left-state')).toHaveTextContent('false');
+    expect(screen.queryByTestId('left-panel')).not.toBeInTheDocument();
   });
 });

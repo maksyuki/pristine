@@ -27,29 +27,42 @@ function AppLayout() {
     activeView, setActiveView,
     tabs, activeTabId, openFile, closeFile, setActiveTabId,
     jumpToLine, jumpTo, setCursorPos,
+    showLeftPanel, setShowLeftPanel,
     showBottomPanel, setShowBottomPanel,
+    showRightPanel, setShowRightPanel,
     editorRef,
     cursorLine, cursorCol,
   } = useWorkspace();
 
   return (
     <div className="flex flex-col h-screen bg-ide-bg text-ide-text overflow-hidden">
-      <MenuBar />
+      <MenuBar
+        showLeftPanel={showLeftPanel}
+        showBottomPanel={showBottomPanel}
+        showRightPanel={showRightPanel}
+        onToggleLeftPanel={() => setShowLeftPanel(!showLeftPanel)}
+        onToggleBottomPanel={() => setShowBottomPanel(!showBottomPanel)}
+        onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <ActivityBar activeView={activeView} onViewChange={setActiveView} />
 
         <PanelGroup direction="horizontal" className="flex-1">
-          <Panel defaultSize={12} minSize={12} maxSize={35} id="left-panel" order={1}>
-            <LeftSidePanel
-              activeFileId={activeTabId}
-              onFileOpen={openFile}
-              onLineJump={jumpTo}
-              currentOutlineId={activeTabId}
-            />
-          </Panel>
+          {showLeftPanel && (
+            <>
+              <Panel defaultSize={12} minSize={12} maxSize={35} id="left-panel" order={1}>
+                <LeftSidePanel
+                  activeFileId={activeTabId}
+                  onFileOpen={openFile}
+                  onLineJump={jumpTo}
+                  currentOutlineId={activeTabId}
+                />
+              </Panel>
 
-          <ResizeHandle direction="vertical" />
+              <ResizeHandle direction="vertical" />
+            </>
+          )}
 
           <Panel defaultSize={55} minSize={30} id="center-panel" order={2}>
             <PanelGroup direction="vertical">
@@ -78,14 +91,18 @@ function AppLayout() {
             </PanelGroup>
           </Panel>
 
-          <ResizeHandle direction="vertical" />
+          {showRightPanel && (
+            <>
+              <ResizeHandle direction="vertical" />
 
-          <Panel defaultSize={18} minSize={18} maxSize={45} id="right-panel" order={3}>
-            <RightSidePanel
-              onFileOpen={openFile}
-              onLineJump={jumpTo}
-            />
-          </Panel>
+              <Panel defaultSize={18} minSize={18} maxSize={45} id="right-panel" order={3}>
+                <RightSidePanel
+                  onFileOpen={openFile}
+                  onLineJump={jumpTo}
+                />
+              </Panel>
+            </>
+          )}
         </PanelGroup>
       </div>
 

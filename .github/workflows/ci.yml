@@ -51,9 +51,16 @@ jobs:
           sudo chmod 4755 "$sandbox_path"
           echo "CHROME_DEVEL_SANDBOX=$sandbox_path" >> "$GITHUB_ENV"
 
+      - name: Install Linux window manager for E2E
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openbox
+
       - name: Run E2E tests on Linux
         if: runner.os == 'Linux'
-        run: xvfb-run -a pnpm test:e2e
+        run: |
+          xvfb-run -a --server-args="-screen 0 1280x720x24" sh -c 'openbox >/tmp/openbox.log 2>&1 & pnpm test:e2e'
 
       - name: Run E2E tests on Windows and macOS
         if: runner.os != 'Linux'

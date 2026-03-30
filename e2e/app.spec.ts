@@ -22,6 +22,14 @@ async function launchApp() {
   return { app, window };
 }
 
+async function openNestedWorkspaceFile(window: Awaited<ReturnType<typeof launchApp>>['window'], pathTestIds: string[]) {
+  for (const testId of pathTestIds) {
+    const node = window.getByTestId(testId);
+    await expect(node).toBeVisible();
+    await node.click();
+  }
+}
+
 test('app launches and shows main UI', async () => {
   const { app, window } = await launchApp();
 
@@ -216,6 +224,77 @@ test('activity bar shows compile, run, and debug action buttons with local selec
   await expect(debugButton).not.toHaveAttribute('aria-pressed', /.+/);
 
   await expect(window.getByTestId('activity-item-explorer')).toHaveClass(/border-ide-accent/);
+
+  await app.close();
+});
+
+test('editor split actions create additional groups and support vertical splitting', async () => {
+  const { app, window } = await launchApp();
+  const editorGroups = window.locator('[data-testid^="editor-group-group-"]');
+
+  await window.getByTestId('file-tree-node-README_md').click();
+  await expect(window.getByTestId('editor-group-group-1')).toBeVisible();
+
+  const firstGroup = window.getByTestId('editor-group-group-1');
+  await firstGroup.getByTestId('editor-split-right').click();
+  await expect(window.getByTestId('editor-group-group-2')).toBeVisible();
+  await expect(editorGroups).toHaveCount(2);
+
+  const secondGroup = window.getByTestId('editor-group-group-2');
+  await secondGroup.getByTestId('editor-split-down').click();
+  await expect(editorGroups).toHaveCount(3);
+
+  await expect(firstGroup.getByTestId('editor-tab-README.md')).toBeVisible();
+  await expect(secondGroup.getByTestId('editor-tab-README.md')).toBeVisible();
+  await expect(editorGroups.nth(2).getByTestId('editor-tab-README.md')).toBeVisible();
+
+  await app.close();
+});
+
+test('focused split receives file tree opens and tabs can be dragged into another split', async () => {
+  const { app, window } = await launchApp();
+
+  await window.getByTestId('file-tree-node-README_md').click();
+
+  const firstGroup = window.getByTestId('editor-group-group-1');
+  await firstGroup.getByTestId('editor-split-right').click();
+
+  const secondGroup = window.getByTestId('editor-group-group-2');
+  await expect(secondGroup).toBeVisible();
+
+  await firstGroup.click();
+  await expect(firstGroup).toHaveAttribute('data-focused', 'true');
+
+  await openNestedWorkspaceFile(window, [
+    'file-tree-node-rtl',
+    'file-tree-node-rtl_core',
+    'file-tree-node-rtl_core_reg_file_v',
+  ]);
+
+  await expect(firstGroup.getByTestId('editor-tab-rtl/core/reg_file.v')).toBeVisible();
+  await expect(secondGroup.getByTestId('editor-tab-rtl/core/reg_file.v')).toHaveCount(0);
+
+  await firstGroup.getByTestId('editor-tab-rtl/core/reg_file.v').dragTo(secondGroup);
+
+  await expect(firstGroup.getByTestId('editor-tab-rtl/core/reg_file.v')).toHaveCount(0);
+  await expect(secondGroup.getByTestId('editor-tab-rtl/core/reg_file.v')).toBeVisible();
+
+  await app.close();
+});
+
+test('closing the last tab removes an empty split group', async () => {
+  const { app, window } = await launchApp();
+
+  await window.getByTestId('file-tree-node-README_md').click();
+
+  const firstGroup = window.getByTestId('editor-group-group-1');
+  await firstGroup.getByTestId('editor-split-right').click();
+
+  await expect(window.getByTestId('editor-group-group-2')).toBeVisible();
+  await firstGroup.getByTestId('editor-tab-close-README.md').click();
+
+  await expect(window.getByTestId('editor-group-group-1')).toHaveCount(0);
+  await expect(window.getByTestId('editor-group-group-2')).toBeVisible();
 
   await app.close();
 });

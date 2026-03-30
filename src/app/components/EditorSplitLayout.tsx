@@ -14,6 +14,30 @@ interface DropTargetState {
   position: EditorDropPosition;
 }
 
+const DROP_POSITION_LABELS: Record<EditorDropPosition, string> = {
+  center: 'Move to group',
+  left: 'Split left',
+  right: 'Split right',
+  top: 'Split up',
+  bottom: 'Split down',
+};
+
+const DROP_ZONE_CLASS_NAMES: Record<EditorDropPosition, string> = {
+  center: 'left-[20%] right-[20%] top-[20%] bottom-[20%]',
+  left: 'left-0 top-0 bottom-0 w-1/2',
+  right: 'right-0 top-0 bottom-0 w-1/2',
+  top: 'left-0 right-0 top-0 h-1/2',
+  bottom: 'left-0 right-0 bottom-0 h-1/2',
+};
+
+const DROP_PREVIEW_CLASS_NAMES: Record<EditorDropPosition, string> = {
+  center: 'left-[20%] right-[20%] top-[20%] bottom-[20%] rounded-sm border border-ide-text-muted/70 bg-ide-selection/70',
+  left: 'left-1/2 top-3 bottom-3 w-px -translate-x-1/2 bg-ide-text-section/75',
+  right: 'right-1/2 top-3 bottom-3 w-px translate-x-1/2 bg-ide-text-section/75',
+  top: 'left-3 right-3 top-1/2 h-px -translate-y-1/2 bg-ide-text-section/75',
+  bottom: 'left-3 right-3 bottom-1/2 h-px translate-y-1/2 bg-ide-text-section/75',
+};
+
 function ResizeHandle({ direction }: { direction: SplitDirection }) {
   return (
     <PanelResizeHandle
@@ -55,19 +79,36 @@ function getDropPosition(rect: DOMRect, clientX: number, clientY: number): Edito
 }
 
 function DropIndicator({ position }: { position: EditorDropPosition }) {
-  const baseClassName = 'pointer-events-none absolute z-20 border-2 border-ide-accent-vivid bg-ide-accent/15';
+  const orderedPositions: EditorDropPosition[] = ['left', 'top', 'center', 'right', 'bottom'];
 
-  const positionClassName = position === 'center'
-    ? 'inset-3'
-    : position === 'left'
-    ? 'left-0 top-0 h-full w-1/3 border-r-0'
-    : position === 'right'
-    ? 'right-0 top-0 h-full w-1/3 border-l-0'
-    : position === 'top'
-    ? 'left-0 top-0 h-1/3 w-full border-b-0'
-    : 'bottom-0 left-0 h-1/3 w-full border-t-0';
+  return (
+    <div className="pointer-events-none absolute inset-0 z-20">
+      <div className="absolute inset-2 rounded-sm border border-ide-border-light/55 bg-ide-selection/12 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]" />
+      {orderedPositions.map((candidatePosition) => {
+        const isActive = candidatePosition === position;
 
-  return <div data-testid={`editor-drop-indicator-${position}`} className={`${baseClassName} ${positionClassName}`} />;
+        return (
+          <div
+            key={candidatePosition}
+            className={`absolute rounded-sm border transition-all duration-150 ease-out ${DROP_ZONE_CLASS_NAMES[candidatePosition]} ${
+              isActive
+                ? 'border-ide-text-muted/65 bg-ide-selection/80 opacity-100 scale-100'
+                : 'border-ide-border-light/18 bg-ide-border-light/8 opacity-0 scale-[0.985]'
+            }`}
+          />
+        );
+      })}
+      <div
+        data-testid={`editor-drop-indicator-${position}`}
+        className={`absolute transition-all duration-150 ease-out ${DROP_PREVIEW_CLASS_NAMES[position]} ${
+          position === 'center' ? 'shadow-[0_0_0_1px_rgba(0,0,0,0.18)]' : 'shadow-[0_0_6px_rgba(204,204,204,0.16)]'
+        }`}
+      />
+      <div className="absolute bottom-3 right-3 rounded-sm border border-ide-border-light/70 bg-ide-sidebar-bg/95 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-ide-text-section transition-all duration-150 ease-out">
+        {DROP_POSITION_LABELS[position]}
+      </div>
+    </div>
+  );
 }
 
 function EditorGroupLeaf({
@@ -118,7 +159,8 @@ function EditorGroupLeaf({
   return (
     <div
       data-testid={`editor-group-${group.id}`}
-      className={`relative h-full min-w-0 ${focused ? 'ring-1 ring-inset ring-ide-accent-vivid/50' : ''}`}
+      data-focused={focused ? 'true' : 'false'}
+      className={`relative h-full min-w-0 ${focused ? 'ring-1 ring-inset ring-ide-accent-vivid/50' : ''} ${dropPosition ? 'ring-1 ring-inset ring-ide-border-light/80' : ''}`}
       onMouseDown={() => onFocus(group.id)}
       onDragOver={(event) => {
         if (!dragState) {
@@ -153,7 +195,7 @@ function EditorGroupLeaf({
         editorRef={editorRef}
         jumpToLine={focused ? jumpToLine : undefined}
         onCursorChange={(line, col) => setCursorPos(line, col, group.id)}
-        onSplitEditor={() => splitGroup(group.id, 'horizontal')}
+        onSplitEditor={(direction) => splitGroup(group.id, direction)}
         onFocus={() => onFocus(group.id)}
         onTabDragStart={onDragStart}
         onTabDragEnd={onDragEnd}
@@ -163,6 +205,8 @@ function EditorGroupLeaf({
         onLoadFile={loadFileContent}
         onContentChange={updateFileContent}
         onEditorMount={(editor) => registerEditorRef(group.id, editor)}
+        showDragInteractionShield={Boolean(dragState)}
+        dragInteractionShieldTestId={`editor-drag-shield-${group.id}`}
       />
     </div>
   );

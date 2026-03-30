@@ -9,7 +9,7 @@ import { getEditorLanguage, getWorkspaceSegments } from '../workspace/workspaceF
 import { defineDraculaTheme } from '../editor/draculaTheme';
 import { useRegisterEditorLanguages } from '../editor/registerLanguages';
 import { FileTypeBadge } from './FileTypeBadge';
-import type { EditorDropPosition } from '../editor/editorLayout';
+import type { SplitDirection } from '../editor/editorLayout';
 
 interface Tab {
   id: string;
@@ -25,7 +25,7 @@ interface EditorAreaProps {
   editorRef: React.MutableRefObject<any>;
   jumpToLine?: number;
   onCursorChange?: (line: number, col: number) => void;
-  onSplitEditor?: () => void;
+  onSplitEditor?: (direction: SplitDirection) => void;
   onFocus?: () => void;
   onTabDragStart?: (tabId: string) => void;
   onTabDragEnd?: () => void;
@@ -34,8 +34,9 @@ interface EditorAreaProps {
   loadErrors?: Record<string, string>;
   onLoadFile?: (fileId: string) => void;
   onContentChange?: (fileId: string, content: string) => void;
-  dropIndicator?: EditorDropPosition | null;
   onEditorMount?: (editor: any) => void;
+  showDragInteractionShield?: boolean;
+  dragInteractionShieldTestId?: string;
 }
 
 // ─── Tab Component ─────────────────────────────────────────────────────────────
@@ -127,6 +128,8 @@ export function EditorArea({
   onLoadFile,
   onContentChange,
   onEditorMount,
+  showDragInteractionShield,
+  dragInteractionShieldTestId,
 }: EditorAreaProps) {
   const monaco = useMonaco();
   useRegisterEditorLanguages(monaco);
@@ -281,11 +284,22 @@ export function EditorArea({
         ))}
         <div className="flex-1" />
         <button
-          onClick={() => onSplitEditor?.()}
-          className="px-2 text-ide-text-muted hover:text-ide-text transition-colors shrink-0"
-          title="Split Editor"
+          data-testid="editor-split-right"
+          aria-label="Split Editor Right"
+          onClick={() => onSplitEditor?.('horizontal')}
+          className="px-2 text-ide-text-muted hover:bg-ide-tab-hover hover:text-ide-text transition-colors shrink-0"
+          title="Split Editor Right"
         >
           <Split size={14} />
+        </button>
+        <button
+          data-testid="editor-split-down"
+          aria-label="Split Editor Down"
+          onClick={() => onSplitEditor?.('vertical')}
+          className="px-2 text-ide-text-muted hover:bg-ide-tab-hover hover:text-ide-text transition-colors shrink-0"
+          title="Split Editor Down"
+        >
+          <Split size={14} className="rotate-90" />
         </button>
         <button className="px-2 text-ide-text-muted hover:text-ide-text transition-colors shrink-0">
           <MoreHorizontal size={14} />
@@ -296,7 +310,14 @@ export function EditorArea({
       {activeTab && <Breadcrumb filePath={activeTabId} />}
 
       {/* Monaco Editor */}
-      <div className="flex-1 overflow-hidden bg-ide-editor-bg">
+      <div className="relative flex-1 overflow-hidden bg-ide-editor-bg">
+        {showDragInteractionShield && (
+          <div
+            data-testid={dragInteractionShieldTestId}
+            className="absolute inset-0 z-10 cursor-grabbing bg-transparent"
+            aria-hidden="true"
+          />
+        )}
         <Editor
           height="100%"
           language={getEditorLanguage(activeTabId)}

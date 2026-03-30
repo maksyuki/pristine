@@ -13,11 +13,15 @@ vi.mock('./EditorArea', () => ({
     onTabDragStart,
     onTabDragEnd,
     onFocus,
+    showDragInteractionShield,
+    dragInteractionShieldTestId,
   }: any) => (
     <div data-testid="mock-editor-area" onMouseDown={onFocus}>
       <div data-testid="mock-active-tab">{activeTabId}</div>
       <div data-testid="mock-tabs">{tabs.map((tab: { id: string }) => tab.id).join(',')}</div>
-      {onSplitEditor ? <button onClick={onSplitEditor}>split-editor</button> : null}
+      {showDragInteractionShield ? <div data-testid={dragInteractionShieldTestId} /> : null}
+      {onSplitEditor ? <button onClick={() => onSplitEditor('horizontal')}>split-editor</button> : null}
+      {onSplitEditor ? <button onClick={() => onSplitEditor('vertical')}>split-editor-down</button> : null}
       {tabs.map((tab: { id: string; name: string }) => (
         <div key={tab.id}>
           <button
@@ -92,6 +96,20 @@ describe('EditorSplitLayout', () => {
     expect(within(screen.getByTestId('editor-group-group-2')).getByTestId('mock-tabs')).toHaveTextContent('rtl/core/reg_file.v');
   });
 
+  it('supports creating a vertical split from the tab bar actions', () => {
+    render(
+      <WorkspaceProvider>
+        <LayoutHarness />
+      </WorkspaceProvider>,
+    );
+
+    fireEvent.click(screen.getByText('open-reg'));
+    fireEvent.click(within(screen.getByTestId('editor-group-group-1')).getByText('split-editor-down'));
+
+    expect(screen.getByTestId('editor-group-group-2')).toBeInTheDocument();
+    expect(within(screen.getByTestId('editor-group-group-2')).getByTestId('mock-tabs')).toHaveTextContent('rtl/core/reg_file.v');
+  });
+
   it('creates a new split when a tab is dropped on the right edge', () => {
     render(
       <WorkspaceProvider>
@@ -104,15 +122,24 @@ describe('EditorSplitLayout', () => {
     const group = screen.getByTestId('editor-group-group-1');
     mockRect(group);
 
-    fireEvent.dragStart(within(group).getByTestId('mock-tab-rtl/core/reg_file.v'));
+    const draggedTab = within(group).getByTestId('mock-tab-rtl/core/reg_file.v');
+    fireEvent.dragStart(draggedTab);
+
+    expect(screen.getByTestId('editor-drag-shield-group-1')).toBeInTheDocument();
+
     fireDragEvent(group, 'dragover', 95, 50);
 
-    expect(screen.getByTestId('editor-drop-indicator-right')).toBeInTheDocument();
+    const indicator = screen.getByTestId('editor-drop-indicator-right');
+    expect(indicator).toBeInTheDocument();
+    expect(indicator).toHaveClass('w-px', 'transition-all', 'duration-150', 'ease-out');
+    expect(indicator).toHaveClass('right-1/2', 'translate-x-1/2', 'bg-ide-text-section/75');
 
     fireDragEvent(group, 'drop', 95, 50);
+    fireEvent.dragEnd(draggedTab);
 
     expect(screen.getByTestId('editor-group-group-2')).toBeInTheDocument();
     expect(within(screen.getByTestId('editor-group-group-2')).getByTestId('mock-tabs')).toHaveTextContent('rtl/core/reg_file.v');
+    expect(screen.queryByTestId('editor-drag-shield-group-1')).not.toBeInTheDocument();
   });
 
   it('moves a tab into an existing group when dropped in the center', () => {
@@ -133,11 +160,39 @@ describe('EditorSplitLayout', () => {
     fireEvent.dragStart(within(sourceGroup).getByTestId('mock-tab-rtl/core/reg_file.v'));
     fireDragEvent(targetGroup, 'dragover', 50, 50);
 
-    expect(screen.getByTestId('editor-drop-indicator-center')).toBeInTheDocument();
+    const indicator = screen.getByTestId('editor-drop-indicator-center');
+    expect(indicator).toBeInTheDocument();
+    expect(indicator).toHaveClass('transition-all', 'duration-150', 'ease-out');
+    expect(indicator).toHaveClass('left-[20%]', 'right-[20%]', 'top-[20%]', 'bottom-[20%]');
 
     fireDragEvent(targetGroup, 'drop', 50, 50);
 
     expect(within(sourceGroup).getByTestId('mock-tabs')).toHaveTextContent('rtl/core/alu.v');
     expect(within(targetGroup).getByTestId('mock-tabs')).toHaveTextContent('rtl/core/alu.v,rtl/core/reg_file.v');
+  });
+
+  it('renders half-pane edge hot zones with animated neutral styling', () => {
+    render(
+      <WorkspaceProvider>
+        <LayoutHarness />
+      </WorkspaceProvider>,
+    );
+
+    fireEvent.click(screen.getByText('open-reg'));
+
+    const group = screen.getByTestId('editor-group-group-1');
+    mockRect(group);
+
+    fireEvent.dragStart(within(group).getByTestId('mock-tab-rtl/core/reg_file.v'));
+    fireDragEvent(group, 'dragover', 10, 50);
+
+    const indicator = screen.getByTestId('editor-drop-indicator-left');
+    expect(indicator).toHaveClass('transition-all', 'duration-150', 'ease-out');
+
+    const halfPaneZone = Array.from(group.querySelectorAll('div')).find((element) => element.className.includes('w-1/2'));
+    expect(halfPaneZone).not.toBeNull();
+
+    const overlayLabel = screen.getByText('Split left');
+    expect(overlayLabel).toHaveClass('border-ide-border-light/70', 'bg-ide-sidebar-bg/95', 'text-ide-text-section');
   });
 });

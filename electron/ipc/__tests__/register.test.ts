@@ -7,6 +7,8 @@ const {
   mockSetFsRoot,
   mockRegisterShellHandlers,
   mockSetShellProjectRoot,
+  mockRegisterTerminalHandlers,
+  mockSetTerminalProjectRoot,
   mockRegisterConfigHandlers,
   mockRegisterPlatformHandler,
 } = vi.hoisted(() => ({
@@ -16,6 +18,8 @@ const {
   mockSetFsRoot: vi.fn(),
   mockRegisterShellHandlers: vi.fn(),
   mockSetShellProjectRoot: vi.fn(),
+  mockRegisterTerminalHandlers: vi.fn(),
+  mockSetTerminalProjectRoot: vi.fn(),
   mockRegisterConfigHandlers: vi.fn(),
   mockRegisterPlatformHandler: vi.fn(),
 }));
@@ -33,6 +37,11 @@ vi.mock('../filesystem.js', () => ({
 vi.mock('../shell.js', () => ({
   registerShellHandlers: (...args: unknown[]) => mockRegisterShellHandlers(...args),
   setShellProjectRoot: (root: string) => mockSetShellProjectRoot(root),
+}));
+
+vi.mock('../terminal.js', () => ({
+  registerTerminalHandlers: (...args: unknown[]) => mockRegisterTerminalHandlers(...args),
+  setTerminalProjectRoot: (root: string) => mockSetTerminalProjectRoot(root),
 }));
 
 vi.mock('../config.js', () => ({
@@ -55,6 +64,7 @@ describe('register helpers', () => {
 
     expect(mockSetFsRoot).toHaveBeenCalledWith(expect.stringContaining('project-root'));
     expect(mockSetShellProjectRoot).toHaveBeenCalledWith(expect.stringContaining('project-root'));
+    expect(mockSetTerminalProjectRoot).toHaveBeenCalledWith(expect.stringContaining('project-root'));
   });
 
   it('registers all handler groups with the expected dependencies', () => {
@@ -66,6 +76,7 @@ describe('register helpers', () => {
     expect(mockRegisterWindowHandlers).toHaveBeenCalledWith(getMainWindow);
     expect(mockRegisterFilesystemHandlers).toHaveBeenCalledTimes(1);
     expect(mockRegisterShellHandlers).toHaveBeenCalledWith(getMainWindow);
+    expect(mockRegisterTerminalHandlers).toHaveBeenCalledWith(getMainWindow);
     expect(mockRegisterConfigHandlers).toHaveBeenCalledTimes(1);
   });
 

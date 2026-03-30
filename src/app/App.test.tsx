@@ -49,18 +49,26 @@ vi.mock('./components/LeftSidePanel', () => ({
   ),
 }));
 
-vi.mock('./components/EditorArea', () => ({
-  EditorArea: ({ tabs, activeTabId, jumpToLine, onTabChange, onTabClose, onCursorChange }: any) => (
-    <div>
-      <span data-testid="editor-active-tab">{activeTabId}</span>
-      <span data-testid="editor-tab-count">{tabs.length}</span>
-      <span data-testid="editor-jump-line">{jumpToLine ?? 'none'}</span>
-      <button onClick={() => onTabChange('rtl/core/alu.v')}>editor-activate-alu</button>
-      <button onClick={() => onTabClose('rtl/core/reg_file.v')}>editor-close-open</button>
-      <button onClick={() => onCursorChange?.(9, 3)}>editor-cursor</button>
-    </div>
-  ),
-}));
+vi.mock('./components/EditorSplitLayout', async () => {
+  const actual = await vi.importActual<typeof import('./context/WorkspaceContext')>('./context/WorkspaceContext');
+
+  return {
+    EditorSplitLayout: ({ jumpToLine }: any) => {
+      const workspace = actual.useWorkspace();
+
+      return (
+        <div>
+          <span data-testid="editor-active-tab">{workspace.activeTabId}</span>
+          <span data-testid="editor-tab-count">{workspace.tabs.length}</span>
+          <span data-testid="editor-jump-line">{jumpToLine ?? 'none'}</span>
+          <button onClick={() => workspace.setActiveTabId('rtl/core/alu.v')}>editor-activate-alu</button>
+          <button onClick={() => workspace.closeFile('rtl/core/reg_file.v')}>editor-close-open</button>
+          <button onClick={() => workspace.setCursorPos(9, 3)}>editor-cursor</button>
+        </div>
+      );
+    },
+  };
+});
 
 vi.mock('./components/RightSidePanel', () => ({
   RightSidePanel: ({ onFileOpen, onLineJump }: any) => (

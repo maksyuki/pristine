@@ -9,6 +9,7 @@ import { getEditorLanguage, getWorkspaceSegments } from '../workspace/workspaceF
 import { defineDraculaTheme } from '../editor/draculaTheme';
 import { useRegisterEditorLanguages } from '../editor/registerLanguages';
 import { FileTypeBadge } from './FileTypeBadge';
+import type { EditorDropPosition } from '../editor/editorLayout';
 
 interface Tab {
   id: string;
@@ -24,14 +25,33 @@ interface EditorAreaProps {
   editorRef: React.MutableRefObject<any>;
   jumpToLine?: number;
   onCursorChange?: (line: number, col: number) => void;
+  onSplitEditor?: () => void;
+  onFocus?: () => void;
+  onTabDragStart?: (tabId: string) => void;
+  onTabDragEnd?: () => void;
+  contentCache?: Record<string, string>;
+  loadingFiles?: Record<string, boolean>;
+  loadErrors?: Record<string, string>;
+  onLoadFile?: (fileId: string) => void;
+  onContentChange?: (fileId: string, content: string) => void;
+  dropIndicator?: EditorDropPosition | null;
+  onEditorMount?: (editor: any) => void;
 }
 
 // ─── Tab Component ─────────────────────────────────────────────────────────────
 function EditorTab({
-  tab, isActive, onActivate, onClose,
-}: { tab: Tab; isActive: boolean; onActivate: () => void; onClose: () => void }) {
+  tab, isActive, onActivate, onClose, onDragStart, onDragEnd,
+}: {
+  tab: Tab;
+  isActive: boolean;
+  onActivate: () => void;
+  onClose: () => void;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
+}) {
   return (
     <div
+      draggable={Boolean(onDragStart)}
       data-testid={`editor-tab-${tab.id}`}
       className={`flex items-center gap-1 px-3 h-full cursor-pointer group border-r border-ide-sidebar-bg transition-colors shrink-0 min-w-[100px] max-w-[200px] ${
         isActive
@@ -39,6 +59,11 @@ function EditorTab({
           : 'bg-ide-tab-bg text-ide-text-muted hover:bg-ide-tab-hover border-t-2 border-t-transparent'
       }`}
       onClick={onActivate}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = 'move';
+        onDragStart?.();
+      }}
+      onDragEnd={() => onDragEnd?.()}
     >
       <FileTypeBadge
         name={tab.name}
@@ -85,23 +110,42 @@ function Breadcrumb({ filePath }: { filePath: string }) {
 
 // ─── Editor Area Component ─────────────────────────────────────────────────────
 export function EditorArea({
-  tabs, activeTabId, onTabChange, onTabClose, editorRef, jumpToLine, onCursorChange,
+  tabs,
+  activeTabId,
+  onTabChange,
+  onTabClose,
+  editorRef,
+  jumpToLine,
+  onCursorChange,
+  onSplitEditor,
+  onFocus,
+  onTabDragStart,
+  onTabDragEnd,
+  contentCache,
+  loadingFiles,
+  loadErrors,
+  onLoadFile,
+  onContentChange,
+  onEditorMount,
 }: EditorAreaProps) {
   const monaco = useMonaco();
   useRegisterEditorLanguages(monaco);
-  const [contentCache, setContentCache] = useState<Record<string, string>>({});
-  const [loadingFiles, setLoadingFiles] = useState<Record<string, boolean>>({});
-  const [loadErrors, setLoadErrors] = useState<Record<string, string>>({});
+  const [localContentCache, setLocalContentCache] = useState<Record<string, string>>({});
+  const [localLoadingFiles, setLocalLoadingFiles] = useState<Record<string, boolean>>({});
+  const [localLoadErrors, setLocalLoadErrors] = useState<Record<string, string>>({});
   const inFlightLoadsRef = useRef<Set<string>>(new Set());
   const isMountedRef = useRef(true);
+  const resolvedContentCache = contentCache ?? localContentCache;
+  const resolvedLoadingFiles = loadingFiles ?? localLoadingFiles;
+  const resolvedLoadErrors = loadErrors ?? localLoadErrors;
 
   const activeTab = tabs.find((t) => t.id === activeTabId);
   const code = activeTabId
-    ? loadErrors[activeTabId]
-      ? `// Failed to load ${activeTab?.name ?? activeTabId}\n// ${loadErrors[activeTabId]}\n`
-      : loadingFiles[activeTabId]
+    ? resolvedLoadErrors[activeTabId]
+      ? `// Failed to load ${activeTab?.name ?? activeTabId}\n// ${resolvedLoadErrors[activeTabId]}\n`
+      : resolvedLoadingFiles[activeTabId]
       ? `// ${activeTab?.name ?? activeTabId}\n// Loading file contents...\n`
-      : contentCache[activeTabId] ?? `// ${activeTab?.name ?? activeTabId}\n// Loading file contents...\n`
+      : resolvedContentCache[activeTabId] ?? `// ${activeTab?.name ?? activeTabId}\n// Loading file contents...\n`
     : '';
 
   useEffect(() => () => {
@@ -109,26 +153,31 @@ export function EditorArea({
   }, []);
 
   useEffect(() => {
-    if (!activeTabId || contentCache[activeTabId] || inFlightLoadsRef.current.has(activeTabId)) {
+    if (!activeTabId || resolvedContentCache[activeTabId] || inFlightLoadsRef.current.has(activeTabId)) {
+      return;
+    }
+
+    if (onLoadFile) {
+      onLoadFile(activeTabId);
       return;
     }
 
     const fsApi = window.electronAPI?.fs;
     if (!fsApi) {
-      setLoadErrors((current) => ({ ...current, [activeTabId]: 'Filesystem API unavailable' }));
+      setLocalLoadErrors((current) => ({ ...current, [activeTabId]: 'Filesystem API unavailable' }));
       return;
     }
 
     inFlightLoadsRef.current.add(activeTabId);
-    setLoadingFiles((current) => ({ ...current, [activeTabId]: true }));
+    setLocalLoadingFiles((current) => ({ ...current, [activeTabId]: true }));
     void fsApi.readFile(activeTabId, 'utf-8')
       .then((content) => {
         if (!isMountedRef.current) {
           return;
         }
 
-        setContentCache((current) => ({ ...current, [activeTabId]: content }));
-        setLoadErrors((current) => {
+        setLocalContentCache((current) => ({ ...current, [activeTabId]: content }));
+        setLocalLoadErrors((current) => {
           if (!current[activeTabId]) {
             return current;
           }
@@ -144,7 +193,7 @@ export function EditorArea({
         }
 
         const message = error instanceof Error ? error.message : 'Unable to load file';
-        setLoadErrors((current) => ({ ...current, [activeTabId]: message }));
+        setLocalLoadErrors((current) => ({ ...current, [activeTabId]: message }));
       })
       .finally(() => {
         inFlightLoadsRef.current.delete(activeTabId);
@@ -153,9 +202,9 @@ export function EditorArea({
           return;
         }
 
-        setLoadingFiles((current) => ({ ...current, [activeTabId]: false }));
+        setLocalLoadingFiles((current) => ({ ...current, [activeTabId]: false }));
       });
-  }, [activeTabId, contentCache]);
+  }, [activeTabId, onLoadFile, resolvedContentCache]);
 
   // Build markers from problems
   useEffect(() => {
@@ -216,7 +265,7 @@ export function EditorArea({
   }
 
   return (
-    <div className="flex flex-col h-full bg-ide-bg overflow-hidden">
+    <div className="flex flex-col h-full bg-ide-bg overflow-hidden" onMouseDown={() => onFocus?.()}>
       {/* Tab bar */}
       <div className="flex items-stretch h-9 bg-ide-tab-bg overflow-x-auto shrink-0 border-b border-ide-sidebar-bg">
         {tabs.map((tab) => (
@@ -226,10 +275,13 @@ export function EditorArea({
             isActive={tab.id === activeTabId}
             onActivate={() => onTabChange(tab.id)}
             onClose={() => onTabClose(tab.id)}
+            onDragStart={onTabDragStart ? () => onTabDragStart(tab.id) : undefined}
+            onDragEnd={onTabDragEnd}
           />
         ))}
         <div className="flex-1" />
         <button
+          onClick={() => onSplitEditor?.()}
           className="px-2 text-ide-text-muted hover:text-ide-text transition-colors shrink-0"
           title="Split Editor"
         >
@@ -255,9 +307,22 @@ export function EditorArea({
           }}
           onMount={(editor) => {
             editorRef.current = editor;
+            onEditorMount?.(editor);
             editor.onDidChangeCursorPosition((e: any) => {
               onCursorChange?.(e.position.lineNumber, e.position.column);
             });
+          }}
+          onChange={(value) => {
+            if (!activeTabId) {
+              return;
+            }
+
+            if (onContentChange) {
+              onContentChange(activeTabId, value ?? '');
+              return;
+            }
+
+            setLocalContentCache((current) => ({ ...current, [activeTabId]: value ?? '' }));
           }}
           options={{
             fontSize: 13,

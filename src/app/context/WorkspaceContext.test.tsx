@@ -10,6 +10,8 @@ function WorkspaceHarness() {
       <div data-testid="active-view">{workspace.activeView}</div>
       <div data-testid="tabs">{workspace.tabs.map((tab) => tab.id).join(',')}</div>
       <div data-testid="active-tab">{workspace.activeTabId}</div>
+      <div data-testid="groups">{workspace.editorGroups.map((group) => `${group.id}:${group.tabs.map((tab) => tab.id).join('|')}`).join(';')}</div>
+      <div data-testid="focused-group">{workspace.focusedGroupId ?? 'none'}</div>
       <div data-testid="jump-line">{workspace.jumpToLine ?? 'none'}</div>
       <div data-testid="cursor">{`${workspace.cursorLine}:${workspace.cursorCol}`}</div>
       <div data-testid="bottom-panel">{workspace.showBottomPanel ? 'open' : 'closed'}</div>
@@ -18,6 +20,9 @@ function WorkspaceHarness() {
       <button onClick={() => workspace.openFile('rtl/core/reg_file.v', 'reg_file.v')}>open-reg</button>
       <button onClick={() => workspace.openFile('rtl/core/reg_file.v', 'reg_file.v')}>open-existing</button>
       <button onClick={() => workspace.openFile('rtl/core/alu.v', 'alu.v')}>open-alu</button>
+      <button onClick={() => workspace.splitGroup('group-1')}>split-group-1</button>
+      <button onClick={() => workspace.focusGroup('group-1')}>focus-group-1</button>
+      <button onClick={() => workspace.focusGroup('group-2')}>focus-group-2</button>
       <button onClick={() => workspace.setActiveTabId('rtl/core/alu.v')}>activate-alu</button>
       <button onClick={() => workspace.closeFile('rtl/core/alu.v')}>close-alu</button>
       <button onClick={() => workspace.jumpTo(42)}>jump</button>
@@ -53,6 +58,22 @@ describe('WorkspaceContext', () => {
 
     expect(screen.getByTestId('tabs')).toHaveTextContent('rtl/core/reg_file.v');
     expect(screen.getByTestId('active-tab')).toHaveTextContent('rtl/core/reg_file.v');
+  });
+
+  it('opens files into the last focused split group', () => {
+    render(
+      <WorkspaceProvider>
+        <WorkspaceHarness />
+      </WorkspaceProvider>,
+    );
+
+    fireEvent.click(screen.getByText('open-reg'));
+    fireEvent.click(screen.getByText('split-group-1'));
+    fireEvent.click(screen.getByText('open-alu'));
+
+    expect(screen.getByTestId('focused-group')).toHaveTextContent('group-2');
+    expect(screen.getByTestId('groups')).toHaveTextContent('group-1:rtl/core/reg_file.v');
+    expect(screen.getByTestId('groups')).toHaveTextContent('group-2:rtl/core/reg_file.v|rtl/core/alu.v');
   });
 
   it('closes the active tab and selects the nearest neighbor', () => {

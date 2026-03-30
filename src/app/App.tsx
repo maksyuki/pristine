@@ -3,7 +3,7 @@ import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 import { MenuBar } from './components/MenuBar';
 import { ActivityBar } from './components/ActivityBar';
 import { LeftSidePanel } from './components/LeftSidePanel';
-import { EditorArea } from './components/EditorArea';
+import { EditorSplitLayout } from './components/EditorSplitLayout';
 import { RightSidePanel } from './components/RightSidePanel';
 import { BottomPanel } from './components/BottomPanel';
 import { StatusBar } from './components/StatusBar';
@@ -31,12 +31,12 @@ const ResizeHandle = ({ direction = 'vertical' }: { direction?: 'vertical' | 'ho
 function AppLayout() {
   const {
     activeView, setActiveView,
-    tabs, activeTabId, openFile, closeFile, setActiveTabId,
-    jumpToLine, jumpTo, setCursorPos,
+    activeTabId,
+    openFile,
+    jumpToLine, jumpTo,
     showLeftPanel, setShowLeftPanel,
     showBottomPanel, setShowBottomPanel,
     showRightPanel, setShowRightPanel,
-    editorRef,
     cursorLine, cursorCol,
   } = useWorkspace();
   const [isQuickOpenVisible, setIsQuickOpenVisible] = useState(false);
@@ -237,15 +237,7 @@ function AppLayout() {
 
               <PanelGroup direction="vertical">
                 <Panel defaultSize={65} minSize={25} id="editor-panel" order={1}>
-                  <EditorArea
-                    tabs={tabs}
-                    activeTabId={activeTabId}
-                    onTabChange={setActiveTabId}
-                    onTabClose={closeFile}
-                    editorRef={editorRef}
-                    jumpToLine={jumpToLine}
-                    onCursorChange={setCursorPos}
-                  />
+                  <EditorSplitLayout jumpToLine={jumpToLine} />
                 </Panel>
 
                 {showBottomPanel && (

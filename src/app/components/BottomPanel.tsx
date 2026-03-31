@@ -9,6 +9,7 @@ import { TerminalPanel } from './TerminalPanel';
 import { OutputPanel } from './OutputPanel';
 import { ProblemsTabPanel } from './ProblemsTabPanel';
 import { DebugConsole } from './DebugConsole';
+import { terminateTerminalSession } from './terminalSessionStore';
 
 interface BottomPanelProps {
   onClose?: () => void;
@@ -16,6 +17,12 @@ interface BottomPanelProps {
 
 export function BottomPanel({ onClose }: BottomPanelProps) {
   const [tab, setTab] = useState<'terminal' | 'output' | 'problems' | 'debug'>('terminal');
+
+  const handleClose = () => {
+    void terminateTerminalSession().finally(() => {
+      onClose?.();
+    });
+  };
 
   const tabs = [
     { id: 'terminal', label: 'Terminal', icon: Terminal },
@@ -59,7 +66,7 @@ export function BottomPanel({ onClose }: BottomPanelProps) {
           <button
             title="Close Panel"
             className="p-1 text-ide-text-muted hover:text-ide-text transition-colors"
-            onClick={onClose}
+            onClick={handleClose}
           >
             <X size={13} />
           </button>

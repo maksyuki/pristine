@@ -392,6 +392,108 @@ test('terminal uses the shared dracula theme and mono font at runtime', async ()
   await app.close();
 });
 
+test('terminal session survives tab switches and bottom panel hide/show', async () => {
+  const { app, window } = await launchApp();
+  const bottomPanel = window.locator('#bottom-panel');
+
+  await openBottomTerminal(window);
+
+  await expect.poll(async () => readTerminalPid(window), {
+    timeout: 15000,
+  }).toBeGreaterThan(0);
+
+  const originalPid = await readTerminalPid(window);
+  expect(isProcessRunning(originalPid)).toBe(true);
+
+  await bottomPanel.getByRole('button', { name: /^output$/i }).click();
+  await expect(window.getByTestId('terminal-host')).toHaveCount(0);
+  expect(isProcessRunning(originalPid)).toBe(true);
+
+  await bottomPanel.getByRole('button', { name: /^terminal$/i, exact: true }).click();
+  await expect.poll(async () => readTerminalPid(window), {
+    timeout: 15000,
+  }).toBe(originalPid);
+
+  await window.getByTestId('toggle-bottom-panel').click();
+  await expect(window.getByTestId('terminal-host')).toHaveCount(0);
+  expect(isProcessRunning(originalPid)).toBe(true);
+
+  await window.getByTestId('toggle-bottom-panel').click();
+  await openBottomTerminal(window);
+  await expect.poll(async () => readTerminalPid(window), {
+    timeout: 15000,
+  }).toBe(originalPid);
+
+  await app.close();
+});
+
+test('terminal preserves output history across tab switches and bottom panel hide/show', async () => {
+  const { app, window } = await launchApp();
+  const bottomPanel = window.locator('#bottom-panel');
+  const marker = '__PRISTINE_TERMINAL_HISTORY__';
+
+  await openBottomTerminal(window);
+
+  const terminalInput = window.locator('[data-testid="terminal-host"] .xterm-helper-textarea');
+  await expect(terminalInput).toHaveCount(1);
+  await terminalInput.click();
+  await terminalInput.pressSequentially(`echo ${marker}`);
+  await terminalInput.press('Enter');
+
+  await expect.poll(async () => readTerminalText(window), {
+    timeout: 15000,
+  }).toContain(marker);
+
+  await bottomPanel.getByRole('button', { name: /^output$/i }).click();
+  await expect(window.getByTestId('terminal-host')).toHaveCount(0);
+
+  await window.getByTestId('toggle-bottom-panel').click();
+  await expect(window.getByTestId('terminal-host')).toHaveCount(0);
+
+  await window.getByTestId('toggle-bottom-panel').click();
+  await bottomPanel.getByRole('button', { name: /^terminal$/i, exact: true }).click();
+  await openBottomTerminal(window);
+
+  await expect.poll(async () => readTerminalText(window), {
+    timeout: 15000,
+  }).toContain(marker);
+
+  await app.close();
+});
+
+test('terminal bottom panel close button terminates the shell and reopening creates a new session', async () => {
+  const { app, window } = await launchApp();
+
+  await openBottomTerminal(window);
+
+  await expect.poll(async () => readTerminalPid(window), {
+    timeout: 15000,
+  }).toBeGreaterThan(0);
+
+  const originalPid = await readTerminalPid(window);
+  expect(isProcessRunning(originalPid)).toBe(true);
+
+  await window.getByTitle('Close Panel').click();
+  await expect(window.getByTestId('terminal-host')).toHaveCount(0);
+
+  await expect.poll(() => isProcessRunning(originalPid), {
+    timeout: 15000,
+  }).toBe(false);
+
+  await window.getByTestId('toggle-bottom-panel').click();
+  await openBottomTerminal(window);
+
+  await expect.poll(async () => readTerminalPid(window), {
+    timeout: 15000,
+  }).toBeGreaterThan(0);
+
+  const reopenedPid = await readTerminalPid(window);
+  expect(reopenedPid).not.toBe(originalPid);
+  expect(isProcessRunning(reopenedPid)).toBe(true);
+
+  await app.close();
+});
+
 test('close button terminates the active terminal shell process', async () => {
   const { app, window } = await launchApp();
 

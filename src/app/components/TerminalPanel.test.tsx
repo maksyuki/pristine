@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TerminalPanel } from './TerminalPanel';
 import type { ElectronAPI } from '../../../types/electron-api';
 import { createTerminalTheme, IDE_MONO_FONT_FAMILY } from '../editor/appearance';
+import { resetTerminalSessionStoreForTests } from './terminalSessionStore';
 
 const terminalInstances: Array<{
   cols: number;
@@ -11,6 +12,7 @@ const terminalInstances: Array<{
   open: ReturnType<typeof vi.fn>;
   focus: ReturnType<typeof vi.fn>;
   write: ReturnType<typeof vi.fn>;
+  reset: ReturnType<typeof vi.fn>;
   dispose: ReturnType<typeof vi.fn>;
   onData: ReturnType<typeof vi.fn>;
   emitData: (data: string) => void;
@@ -33,6 +35,7 @@ vi.mock('@xterm/xterm', () => ({
     open = vi.fn();
     focus = vi.fn();
     write = vi.fn();
+    reset = vi.fn();
     dispose = vi.fn();
     private onDataHandler: ((data: string) => void) | null = null;
     onData = vi.fn((callback: (data: string) => void) => {
@@ -49,6 +52,7 @@ vi.mock('@xterm/xterm', () => ({
         open: this.open,
         focus: this.focus,
         write: this.write,
+        reset: this.reset,
         dispose: this.dispose,
         onData: this.onData,
         emitData: (data: string) => this.onDataHandler?.(data),
@@ -59,6 +63,7 @@ vi.mock('@xterm/xterm', () => ({
 
 describe('TerminalPanel', () => {
   beforeEach(() => {
+    resetTerminalSessionStoreForTests();
     terminalInstances.length = 0;
     terminalConstructorOptions.length = 0;
     fitMock.mockClear();
@@ -117,9 +122,10 @@ describe('TerminalPanel', () => {
     await waitFor(() => expect(writeMock).toHaveBeenCalledWith('term-2', 'dir\r'));
   });
 
-  it('kills the terminal session on unmount', async () => {
+  it('keeps the terminal session alive across unmount and remount', async () => {
     const createMock = vi.fn().mockResolvedValue({ id: 'term-3', pid: 303, shell: 'powershell.exe' });
     const killMock = vi.fn().mockResolvedValue(true);
+    let onDataCallback: ((payload: { id: string; data: string }) => void) | undefined;
     const baseApi = window.electronAPI as ElectronAPI;
 
     window.electronAPI = {
@@ -128,6 +134,10 @@ describe('TerminalPanel', () => {
         ...baseApi.terminal,
         create: createMock,
         kill: killMock,
+        onData: vi.fn((callback: (payload: { id: string; data: string }) => void) => {
+          onDataCallback = callback;
+          return vi.fn();
+        }),
       },
     };
 
@@ -135,7 +145,14 @@ describe('TerminalPanel', () => {
     await waitFor(() => expect(createMock).toHaveBeenCalled());
     view.unmount();
 
-    await waitFor(() => expect(killMock).toHaveBeenCalledWith('term-3'));
+    expect(killMock).not.toHaveBeenCalled();
     expect(terminalInstances[0]?.dispose).toHaveBeenCalled();
+
+    onDataCallback?.({ id: 'term-3', data: 'persisted\r\n' });
+
+    render(<TerminalPanel />);
+
+    await waitFor(() => expect(terminalInstances[1]?.write).toHaveBeenCalledWith('persisted\r\n'));
+    expect(createMock).toHaveBeenCalledTimes(1);
   });
 });

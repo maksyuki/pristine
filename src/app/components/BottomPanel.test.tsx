@@ -1,8 +1,33 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BottomPanel } from './BottomPanel';
 
+const terminateTerminalSessionMock = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('./terminalSessionStore', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./terminalSessionStore')>();
+  return {
+    ...actual,
+    terminateTerminalSession: () => terminateTerminalSessionMock(),
+  };
+});
+
 describe('BottomPanel', () => {
+  beforeEach(() => {
+    terminateTerminalSessionMock.mockClear();
+  });
+
+  it('terminates the terminal session before closing the panel', async () => {
+    const onClose = vi.fn();
+
+    render(<BottomPanel onClose={onClose} />);
+
+    fireEvent.click(screen.getByTitle(/close panel/i));
+
+    await waitFor(() => expect(terminateTerminalSessionMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
   it('switches between tabs and closes the panel', () => {
     const onClose = vi.fn();
 
@@ -17,7 +42,7 @@ describe('BottomPanel', () => {
     expect(screen.getByText(/Debug session not started/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByTitle(/close panel/i));
-    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(terminateTerminalSessionMock).toHaveBeenCalled();
   });
 
   it('filters output entries by text and severity', () => {

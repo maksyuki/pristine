@@ -1,7 +1,16 @@
 import { getRootThemeStyles, resolveDraculaPalette, type StyleReader } from './themeSource';
 
-function stripHash(color: string) {
-  return color.replace(/^#/, '');
+function normalizeMonacoTokenColor(color: string) {
+  const normalized = color.trim().replace(/^#/, '');
+
+  if (normalized.length === 3 || normalized.length === 4) {
+    return normalized
+      .split('')
+      .map((char) => `${char}${char}`)
+      .join('');
+  }
+
+  return normalized;
 }
 
 export function createDraculaThemeDefinition(styles: StyleReader | null = getRootThemeStyles()) {
@@ -11,26 +20,26 @@ export function createDraculaThemeDefinition(styles: StyleReader | null = getRoo
     base: 'vs-dark',
     inherit: true,
     rules: [
-      { token: 'keyword', foreground: stripHash(palette.pink), fontStyle: 'bold' },
-      { token: 'keyword.control', foreground: stripHash(palette.pink) },
-      { token: 'support.function', foreground: stripHash(palette.green) },
-      { token: 'support.function.shell', foreground: stripHash(palette.green) },
-      { token: 'comment', foreground: stripHash(palette.comment), fontStyle: 'italic' },
-      { token: 'string', foreground: stripHash(palette.yellow) },
-      { token: 'string.invalid', foreground: stripHash(palette.red) },
-      { token: 'number', foreground: stripHash(palette.purple) },
-      { token: 'identifier', foreground: stripHash(palette.foreground) },
-      { token: 'variable', foreground: stripHash(palette.orange) },
-      { token: 'variable.automatic', foreground: stripHash(palette.orange), fontStyle: 'bold' },
-      { token: 'variable.shell', foreground: stripHash(palette.cyan) },
-      { token: 'delimiter', foreground: stripHash(palette.foreground) },
-      { token: 'operator', foreground: stripHash(palette.pink) },
-      { token: 'operator.assignment.immediate', foreground: stripHash(palette.pink), fontStyle: 'bold' },
-      { token: 'operator.assignment.append', foreground: stripHash(palette.green), fontStyle: 'bold' },
-      { token: 'operator.assignment.conditional', foreground: stripHash(palette.purple), fontStyle: 'bold' },
-      { token: 'operator.assignment.recursive', foreground: stripHash(palette.orange), fontStyle: 'bold' },
-      { token: 'meta.recipe', foreground: stripHash(palette.comment) },
-      { token: 'type', foreground: stripHash(palette.cyan), fontStyle: 'italic' },
+      { token: 'keyword', foreground: normalizeMonacoTokenColor(palette.pink), fontStyle: 'bold' },
+      { token: 'keyword.control', foreground: normalizeMonacoTokenColor(palette.pink) },
+      { token: 'support.function', foreground: normalizeMonacoTokenColor(palette.green) },
+      { token: 'support.function.shell', foreground: normalizeMonacoTokenColor(palette.green) },
+      { token: 'comment', foreground: normalizeMonacoTokenColor(palette.comment), fontStyle: 'italic' },
+      { token: 'string', foreground: normalizeMonacoTokenColor(palette.yellow) },
+      { token: 'string.invalid', foreground: normalizeMonacoTokenColor(palette.red) },
+      { token: 'number', foreground: normalizeMonacoTokenColor(palette.purple) },
+      { token: 'identifier', foreground: normalizeMonacoTokenColor(palette.foreground) },
+      { token: 'variable', foreground: normalizeMonacoTokenColor(palette.orange) },
+      { token: 'variable.automatic', foreground: normalizeMonacoTokenColor(palette.orange), fontStyle: 'bold' },
+      { token: 'variable.shell', foreground: normalizeMonacoTokenColor(palette.cyan) },
+      { token: 'delimiter', foreground: normalizeMonacoTokenColor(palette.foreground) },
+      { token: 'operator', foreground: normalizeMonacoTokenColor(palette.pink) },
+      { token: 'operator.assignment.immediate', foreground: normalizeMonacoTokenColor(palette.pink), fontStyle: 'bold' },
+      { token: 'operator.assignment.append', foreground: normalizeMonacoTokenColor(palette.green), fontStyle: 'bold' },
+      { token: 'operator.assignment.conditional', foreground: normalizeMonacoTokenColor(palette.purple), fontStyle: 'bold' },
+      { token: 'operator.assignment.recursive', foreground: normalizeMonacoTokenColor(palette.orange), fontStyle: 'bold' },
+      { token: 'meta.recipe', foreground: normalizeMonacoTokenColor(palette.comment) },
+      { token: 'type', foreground: normalizeMonacoTokenColor(palette.cyan), fontStyle: 'italic' },
     ],
     colors: {
       'editor.background': palette.background,

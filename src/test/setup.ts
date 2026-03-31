@@ -2,6 +2,99 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 
+// ─── Mock HTMLCanvasElement.getContext for Konva in jsdom ──────────────────────
+// jsdom does not implement getContext, so Konva crashes when trying to access
+// context methods like .scale(), .save(), etc. Provide a minimal stub.
+const noop = () => {};
+function createContext2dMock(): Record<string, unknown> {
+  return {
+    getImageData: (_sx: number, _sy: number, sw: number, sh: number) => ({
+      data: new Uint8ClampedArray(sw * sh * 4),
+      width: sw,
+      height: sh,
+    }),
+    putImageData: noop,
+    createImageData: () => [],
+    setTransform: noop,
+    resetTransform: noop,
+    drawImage: noop,
+    save: noop,
+    fillRect: noop,
+    clearRect: noop,
+    restore: noop,
+    beginPath: noop,
+    moveTo: noop,
+    lineTo: noop,
+    closePath: noop,
+    stroke: noop,
+    fill: noop,
+    translate: noop,
+    scale: noop,
+    rotate: noop,
+    arc: noop,
+    arcTo: noop,
+    ellipse: noop,
+    rect: noop,
+    clip: noop,
+    quadraticCurveTo: noop,
+    bezierCurveTo: noop,
+    isPointInPath: () => false,
+    isPointInStroke: () => false,
+    measureText: (text: string) => ({
+      width: text.length * 6,
+      actualBoundingBoxLeft: 0,
+      actualBoundingBoxRight: text.length * 6,
+      actualBoundingBoxAscent: 12,
+      actualBoundingBoxDescent: 4,
+      fontBoundingBoxAscent: 12,
+      fontBoundingBoxDescent: 4,
+    }),
+    transform: noop,
+    fillText: noop,
+    strokeText: noop,
+    createLinearGradient: () => ({ addColorStop: noop }),
+    createRadialGradient: () => ({ addColorStop: noop }),
+    createPattern: () => ({}),
+    setLineDash: noop,
+    getLineDash: () => [],
+    canvas: { width: 300, height: 150 },
+    globalAlpha: 1,
+    globalCompositeOperation: 'source-over',
+    strokeStyle: '#000',
+    fillStyle: '#000',
+    lineWidth: 1,
+    lineCap: 'butt',
+    lineJoin: 'miter',
+    miterLimit: 10,
+    shadowBlur: 0,
+    shadowColor: 'rgba(0,0,0,0)',
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    font: '10px sans-serif',
+    textAlign: 'start',
+    textBaseline: 'alphabetic',
+  };
+}
+
+const originalGetContext =
+  typeof HTMLCanvasElement !== 'undefined'
+    ? HTMLCanvasElement.prototype.getContext
+    : null;
+if (typeof HTMLCanvasElement !== 'undefined') {
+  // @ts-expect-error – overriding with a loose mock
+  HTMLCanvasElement.prototype.getContext = function (
+    contextId: string,
+    ...rest: unknown[]
+  ) {
+    if (contextId === '2d') {
+      const ctx = createContext2dMock();
+      ctx.canvas = this as unknown;
+      return ctx;
+    }
+    return originalGetContext!.call(this, contextId, ...rest);
+  } as typeof HTMLCanvasElement.prototype.getContext;
+}
+
 function createElectronApiMock() {
   return {
     platform: 'win32',

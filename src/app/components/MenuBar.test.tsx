@@ -1,10 +1,19 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuBar } from './MenuBar';
+import { WorkspaceProvider } from '../context/WorkspaceContext';
+
+function renderMenuBar(props: React.ComponentProps<typeof MenuBar> = {}) {
+  return render(
+    <WorkspaceProvider>
+      <MenuBar {...props} />
+    </WorkspaceProvider>,
+  );
+}
 
 describe('MenuBar', () => {
   it('calls electron window controls when titlebar buttons are clicked', () => {
-    render(<MenuBar />);
+    renderMenuBar();
 
     fireEvent.click(screen.getByTestId('window-control-minimize'));
     fireEvent.click(screen.getByTestId('window-control-maximize'));
@@ -16,7 +25,7 @@ describe('MenuBar', () => {
   });
 
   it('does not render the select project dropdown or upgrade button', () => {
-    render(<MenuBar />);
+    renderMenuBar();
 
     expect(screen.queryByRole('button', { name: /select project/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /upgrade to pro/i })).not.toBeInTheDocument();
@@ -27,13 +36,11 @@ describe('MenuBar', () => {
     const onToggleBottomPanel = vi.fn();
     const onToggleRightPanel = vi.fn();
 
-    render(
-      <MenuBar
-        onToggleLeftPanel={onToggleLeftPanel}
-        onToggleBottomPanel={onToggleBottomPanel}
-        onToggleRightPanel={onToggleRightPanel}
-      />,
-    );
+    renderMenuBar({
+      onToggleLeftPanel,
+      onToggleBottomPanel,
+      onToggleRightPanel,
+    });
 
     fireEvent.click(screen.getByTestId('toggle-left-panel'));
     fireEvent.click(screen.getByTestId('toggle-bottom-panel'));
@@ -45,13 +52,11 @@ describe('MenuBar', () => {
   });
 
   it('reflects active panel visibility on the layout buttons', () => {
-    render(
-      <MenuBar
-        showLeftPanel
-        showBottomPanel={false}
-        showRightPanel
-      />,
-    );
+    renderMenuBar({
+      showLeftPanel: true,
+      showBottomPanel: false,
+      showRightPanel: true,
+    });
 
     expect(screen.getByTestId('toggle-left-panel')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('toggle-bottom-panel')).toHaveAttribute('aria-pressed', 'false');
@@ -59,7 +64,7 @@ describe('MenuBar', () => {
   });
 
   it('keeps the centered view switcher interactive inside the title bar', () => {
-    render(<MenuBar />);
+    renderMenuBar();
 
     const switcher = screen.getByTestId('center-view-switcher') as HTMLDivElement;
 

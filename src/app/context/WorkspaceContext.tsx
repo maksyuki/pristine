@@ -17,9 +17,14 @@ import {
 
 export type Tab = EditorTab;
 
+export type MainContentView = 'code' | 'whiteboard' | 'workflow';
+
 interface WorkspaceState {
   activeView: string;
   setActiveView: (view: string) => void;
+
+  mainContentView: MainContentView;
+  setMainContentView: (view: MainContentView) => void;
 
   editorGroups: EditorGroup[];
   editorLayout: EditorLayoutNode | null;
@@ -75,6 +80,7 @@ export function useWorkspace(): WorkspaceState {
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [activeView, setActiveView] = useState('explorer');
+  const [mainContentView, setMainContentView] = useState<MainContentView>('code');
   const idCounterRef = useRef(2);
   const [editorState, setEditorState] = useState(() => createInitialEditorWorkspace('group-1'));
   const [showLeftPanel, setShowLeftPanel] = useState(true);
@@ -258,6 +264,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   return (
     <WorkspaceContext.Provider value={{
       activeView, setActiveView,
+      mainContentView, setMainContentView,
       editorGroups,
       editorLayout: editorState.layout,
       focusedGroupId: editorState.focusedGroupId,

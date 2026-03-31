@@ -11,6 +11,8 @@ import { QuickOpenPalette } from './components/QuickOpenPalette';
 import { createQuickOpenFileEntries, getRecentQuickOpenFiles, searchQuickOpenFiles, type QuickOpenFileEntry, type QuickOpenSearchResult } from './quickOpen/quickOpenSearch';
 import type { WorkspaceRevealRequest } from './workspace/useWorkspaceTree';
 import { WorkspaceProvider, useWorkspace } from './context/WorkspaceContext';
+import { WorkflowPlaceholder } from './components/WorkflowPlaceholder';
+import { WhiteboardView } from './components/whiteboard/WhiteboardView';
 
 const QUICK_OPEN_RECENT_LIMIT = 20;
 
@@ -31,6 +33,7 @@ const ResizeHandle = ({ direction = 'vertical' }: { direction?: 'vertical' | 'ho
 function AppLayout() {
   const {
     activeView, setActiveView,
+    mainContentView,
     activeTabId,
     openFile,
     jumpToLine, jumpTo,
@@ -193,6 +196,8 @@ function AppLayout() {
         onToggleRightPanel={() => setShowRightPanel(!showRightPanel)}
       />
 
+      {mainContentView === 'code' ? (
+      <>
       <div className="flex flex-1 overflow-hidden">
         <ActivityBar
           activeView={activeView}
@@ -274,6 +279,12 @@ function AppLayout() {
         cursorLine={cursorLine}
         cursorCol={cursorCol}
       />
+      </>
+      ) : mainContentView === 'whiteboard' ? (
+        <WhiteboardView />
+      ) : (
+        <WorkflowPlaceholder />
+      )}
     </div>
   );
 }

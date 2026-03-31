@@ -3,6 +3,7 @@ import {
   PanelLeft, PanelBottom, Columns2,
   Settings, CircleUser, Minus, Square, X, Code2, Presentation, Workflow,
 } from 'lucide-react';
+import { useWorkspace } from '../context/WorkspaceContext';
 
 const menus = [
   {
@@ -72,7 +73,7 @@ export function MenuBar({
   onToggleRightPanel,
 }: MenuBarProps) {
   const [openMenu, setOpenMenu] = useState<number | null>(null);
-  const [activeView, setActiveView] = useState<'code' | 'whiteboard' | 'workflow'>('code');
+  const { mainContentView, setMainContentView } = useWorkspace();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -144,9 +145,9 @@ export function MenuBar({
       >
         <button
           title="Code"
-          onClick={() => setActiveView('code')}
+          onClick={() => setMainContentView('code')}
           className={`w-7 h-6 flex cursor-pointer items-center justify-center rounded transition-colors ${
-            activeView === 'code'
+            mainContentView === 'code'
               ? 'bg-[#505050] text-[#cccccc]'
               : 'text-[#858585] hover:text-[#cccccc] hover:bg-[#404040]'
           }`}
@@ -155,9 +156,9 @@ export function MenuBar({
         </button>
         <button
           title="Whiteboard"
-          onClick={() => setActiveView('whiteboard')}
+          onClick={() => setMainContentView('whiteboard')}
           className={`w-7 h-6 flex cursor-pointer items-center justify-center rounded transition-colors ${
-            activeView === 'whiteboard'
+            mainContentView === 'whiteboard'
               ? 'bg-[#505050] text-[#cccccc]'
               : 'text-[#858585] hover:text-[#cccccc] hover:bg-[#404040]'
           }`}
@@ -166,9 +167,9 @@ export function MenuBar({
         </button>
         <button
           title="Workflow"
-          onClick={() => setActiveView('workflow')}
+          onClick={() => setMainContentView('workflow')}
           className={`w-7 h-6 flex cursor-pointer items-center justify-center rounded transition-colors ${
-            activeView === 'workflow'
+            mainContentView === 'workflow'
               ? 'bg-[#505050] text-[#cccccc]'
               : 'text-[#858585] hover:text-[#cccccc] hover:bg-[#404040]'
           }`}

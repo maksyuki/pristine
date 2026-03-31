@@ -71,7 +71,7 @@ describe('shapeFactory', () => {
     });
 
     it('adds to comment layer when commentLayer=true', () => {
-      createRect(10, 20, 30, 40, config, layers, pushState, 'gray', '#F3F1B1', false, true);
+      createRect(10, 20, 30, 40, config, layers, pushState, 'gray', '#F3F1B1', false, undefined, true);
       expect(layers.comment!.find('.rectangle').length).toBe(1);
       expect(layers.shape!.find('.rectangle').length).toBe(0);
     });

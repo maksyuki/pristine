@@ -5,7 +5,6 @@ import { BottomBar } from './BottomBar';
 import { LayerPanel } from './LayerPanel';
 import { MiniMap } from './MiniMap';
 import { HistoryPanel } from './HistoryPanel';
-import { KeyboardDisplay, StatusDisplay } from './StatusDisplays';
 import { ShapeInPagePanel } from './ShapeInPagePanel';
 import type { VeSelectedBtn } from './types';
 
@@ -109,14 +108,12 @@ export const WhiteboardView: React.FC = () => {
       />
 
       <HistoryPanel
+        className="hidden"
         historyState={ve.historyState}
         historyItemList={ve.historyItemList}
         historyListPanelRef={ve.historyListPanelRef}
         onHistoryItemClick={ve.handleHistoryItemClick}
       />
-
-      <KeyboardDisplay veKeyboardKey={ve.veKeyboardKey} />
-      <StatusDisplay veTemplateType={ve.veTemplateType} />
 
       <ShapeInPagePanel
         veShapeInPagePanelState={ve.veShapeInPagePanelState}

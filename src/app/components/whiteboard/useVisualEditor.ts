@@ -42,9 +42,8 @@ export function useVisualEditor() {
   const [veSelectedBtn, setVeSelectedBtn] = useState<VeSelectedBtn>('select');
   const [veIsGrabbing, setVeIsGrabbing] = useState(false);
   const [veIsCodeFreeze, setVeIsCodeFreeze] = useState(false);
-  const [wbTheme, setWbTheme] = useState<'light' | 'dark'>('light');
+  const [wbTheme, setWbTheme] = useState<'light' | 'dark'>('dark');
   const toggleWbTheme = useCallback(() => setWbTheme((t) => (t === 'light' ? 'dark' : 'light')), []);
-  const [veTemplateType, setVeTemplateType] = useState('MDD-GDS');
   const [veKeyboardKey, setVeKeyboardKey] = useState('none');
   const [isTopBarLeftHomeBtnClick, setIsTopBarLeftHomeBtnClick] = useState(false);
 
@@ -110,8 +109,8 @@ export function useVisualEditor() {
     let gridPointDash = [1, gridSize - 1];
     const scale = veStageState.scale;
 
-    const gridLineColor = wbTheme === 'light' ? '#d0d0d0' : '#2a2a4a';
-    const gridPointColor = wbTheme === 'light' ? '#b0b0b0' : '#3a3a5a';
+    const gridLineColor = wbTheme === 'light' ? '#d0d0d0' : '#2a2a2a';
+    const gridPointColor = wbTheme === 'light' ? '#b0b0b0' : '#3a3a3a';
 
     if (scale <= 0.3) {
       gridSize *= 3;
@@ -346,7 +345,7 @@ export function useVisualEditor() {
       case 'spec-note': {
         const size = veConfig.gridSize * 8;
         createRect(pointerPos.x - size / 2, pointerPos.y - size / 2, size, size, veConfig,
-          veSystemLayerRef.current, pushState, 'gray', '#F3F1B1', true, true);
+          veSystemLayerRef.current, pushState, 'gray', '#F3F1B1', true, 'rgba(255,255,255,0.5)', true);
         break;
       }
       case 'picture': {
@@ -607,7 +606,7 @@ export function useVisualEditor() {
     createRect(g * 15, g * 2, g * 3, g * 6, veConfig, layers, pushState);
     createRect(g * 42, g * 8, g * 3, g * 4, veConfig, layers, pushState);
     createText(g * 42, g * 5, 'Open Silicon Design', veConfig, layers, pushState);
-    createRect(g * 42, g * 18, g * 8, g * 8, veConfig, layers, pushState, 'gray', '#F3F1B1', true, true);
+    createRect(g * 42, g * 18, g * 8, g * 8, veConfig, layers, pushState, 'gray', '#F3F1B1', true, 'rgba(255,255,255,0.5)', true);
   }, [veConfig, pushState]);
 
   // ─── Mount / Unmount ──────────────────────────────────────────────────
@@ -655,8 +654,6 @@ export function useVisualEditor() {
     veIsGrabbing,
     veIsCodeFreeze, setVeIsCodeFreeze,
     wbTheme, toggleWbTheme,
-    veTemplateType, setVeTemplateType,
-    veKeyboardKey,
     isTopBarLeftHomeBtnClick, setIsTopBarLeftHomeBtnClick,
     // Layer controls
     veGridLayerControl, veShapeLayerControl, veDesignLayerControl, veCommentLayerControl,

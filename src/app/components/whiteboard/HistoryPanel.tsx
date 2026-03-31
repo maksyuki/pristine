@@ -3,6 +3,7 @@ import type { HistoryItem, HistoryState } from './types';
 import { veHistoryItemActionMap as historyItemActionMap, veHistoryItemShapeMap as historyItemShapeMap } from './constants';
 
 interface HistoryPanelProps {
+  className?: string;
   historyState: HistoryState;
   historyItemList: HistoryItem[];
   historyListPanelRef: React.RefObject<HTMLDivElement | null>;
@@ -10,10 +11,10 @@ interface HistoryPanelProps {
 }
 
 export const HistoryPanel: React.FC<HistoryPanelProps> = ({
-  historyState, historyItemList, historyListPanelRef, onHistoryItemClick,
+  className, historyState, historyItemList, historyListPanelRef, onHistoryItemClick,
 }) => {
   return (
-    <div className="absolute bottom-1/4 right-4">
+    <div className={`absolute bottom-1/4 right-4 ${className ?? ''}`}>
       <div className="flex flex-col w-48 h-72 border border-[var(--wb-panel-border)] bg-[var(--wb-panel-bg)] text-[var(--wb-panel-text)] rounded-xl shadow-md">
         <div className="flex justify-between items-center mx-2 mt-2 h-fit bg-[var(--wb-panel-active)] rounded-md px-1">
           <div className="text-base">{historyState.num}/100</div>

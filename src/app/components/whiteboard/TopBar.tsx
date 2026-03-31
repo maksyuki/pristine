@@ -35,7 +35,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {topBarLeft.map((item, idx) => (
           <button
             key={idx}
-            className="rounded-lg p-2 text-xl hover:bg-[var(--wb-panel-hover)] outline-none"
+            className="rounded-lg p-1 text-xl hover:bg-[var(--wb-panel-hover)] outline-none"
             title={item.tooltip}
             onClick={() => onTopBarLeftBtnClick(item.tooltip)}
           >
@@ -53,7 +53,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {topBarRight.map((item, idx) => (
           <button
             key={idx}
-            className="rounded-lg p-2 text-xl hover:bg-[var(--wb-panel-hover)]"
+            className="rounded-lg p-1 text-xl hover:bg-[var(--wb-panel-hover)]"
             title={item.tooltip}
           >
             <i className={item.name} />
@@ -61,7 +61,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         ))}
         {/* Theme toggle button */}
         <button
-          className="rounded-lg p-2 text-xl hover:bg-[var(--wb-panel-hover)] outline-none"
+          className="rounded-lg p-1 text-xl hover:bg-[var(--wb-panel-hover)] outline-none"
           title={wbTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
           onClick={onToggleTheme}
         >

@@ -44,18 +44,18 @@
 
 .wb-theme-dark {
   /* Canvas */
-  --wb-canvas-bg: #1a1a2e;
-  --wb-grid-line-color: #2a2a4a;
-  --wb-grid-point-color: #3a3a5a;
+  --wb-canvas-bg: #1e1e1e;
+  --wb-grid-line-color: #2a2a2a;
+  --wb-grid-point-color: #3a3a3a;
 
   /* Panels */
-  --wb-panel-bg: #1e1e2e;
-  --wb-panel-border: #2d2d44;
+  --wb-panel-bg: #2d2d2d;
+  --wb-panel-border: #3d3d3d;
   --wb-panel-text: #e2e8f0;
-  --wb-panel-hover: #2a2a40;
-  --wb-panel-active: #25253b;
-  --wb-panel-header: #25253b;
-  --wb-panel-secondary: #232338;
+  --wb-panel-hover: #404040;
+  --wb-panel-active: #353535;
+  --wb-panel-header: #353535;
+  --wb-panel-secondary: #333333;
 
   /* Buttons */
   --wb-btn-selected-bg: #3b82f6;
@@ -63,20 +63,20 @@
 
   /* Glass panels */
   --wb-glass-bg: rgba(0, 0, 0, 0.50);
-  --wb-glass-border: rgba(222, 226, 230, 0.15);
+  --wb-glass-border: rgba(222, 226, 230, 0.25);
   --wb-glass-text: rgba(255, 255, 255, 0.80);
   --wb-glass-text-secondary: rgba(255, 255, 255, 0.60);
-  --wb-glass-btn-bg: rgba(50, 50, 60, 0.60);
+  --wb-glass-btn-bg: rgba(50, 50, 50, 0.60);
   --wb-glass-btn-hover: rgba(246, 249, 252, 0.15);
   --wb-glass-input-bg: rgba(255, 255, 255, 0.06);
 
   /* Status displays */
-  --wb-status-bg: #25253b;
-  --wb-status-border: #2d2d44;
+  --wb-status-bg: #252525;
+  --wb-status-border: #3d3d3d;
   --wb-status-text: #e2e8f0;
 
   /* Progress / misc */
-  --wb-progress-track: #2d2d44;
+  --wb-progress-track: #2d2d2d;
   --wb-progress-fill: #94a3b8;
 
   /* Overlay */

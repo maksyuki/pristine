@@ -106,7 +106,7 @@ export function bindObjEvtHandle(
 
     const setTextareaWidth = (newWidth = 0) => {
       if (!newWidth) {
-        newWidth = ((textNode as any).placeholder?.length * textNode.fontSize()) ?? (textNode.fontSize() * 4);
+        newWidth = ((textNode as any).placeholder?.length * textNode.fontSize()) || (textNode.fontSize() * 4);
       }
       textarea.style.width = newWidth + 'px';
     };
@@ -274,6 +274,7 @@ export function createRect(
   strokeColor = 'white',
   fillColor?: string,
   hasShadow = false,
+  shadowColor = 'rgba(0,0,0,0.4)',
   commentLayer = false,
   veSystem?: VeSystem,
 ) {
@@ -292,7 +293,7 @@ export function createRect(
   if (hasShadow) {
     defaultConfig = {
       ...defaultConfig,
-      shadowColor: 'rgba(0,0,0,0.4)',
+      shadowColor,
       shadowBlur: 8,
       shadowOffset: { x: 4, y: 4 },
       shadowOpacity: 0.6,
@@ -364,13 +365,14 @@ export function createText(
   veConfig: VeConfig, veSystemLayer: VeSystemLayer,
   pushState: (a: string, id: number, cls: string) => void,
   veSystem?: VeSystem,
+  fill = 'white',
 ) {
   const text = new Konva.Text({
     x, y,
     text: content,
     fontSize: 27,
     fontFamily: 'Calibri',
-    fill: 'black',
+    fill,
     name: 'text',
     draggable: true,
     strokeScaleEnabled: false,

@@ -81,15 +81,15 @@ const originalGetContext =
     ? HTMLCanvasElement.prototype.getContext
     : null;
 if (typeof HTMLCanvasElement !== 'undefined') {
-  // @ts-expect-error – overriding with a loose mock
   HTMLCanvasElement.prototype.getContext = function (
+    this: HTMLCanvasElement,
     contextId: string,
     ...rest: unknown[]
   ) {
     if (contextId === '2d') {
       const ctx = createContext2dMock();
-      ctx.canvas = this as unknown;
-      return ctx;
+      ctx.canvas = this;
+      return ctx as unknown as ReturnType<typeof HTMLCanvasElement.prototype.getContext>;
     }
     return originalGetContext!.call(this, contextId, ...rest);
   } as typeof HTMLCanvasElement.prototype.getContext;

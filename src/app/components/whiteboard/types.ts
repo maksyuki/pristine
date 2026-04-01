@@ -35,6 +35,29 @@ export interface TopSubBarHomeItem {
   tooltip: string;
 }
 
+export type SoCInPagePanelSelected = 'none' | 'CORE' | 'RCU' | 'BUS';
+
+export interface SoCPanelAddr {
+  name: string;
+  addr: string;
+}
+
+export interface SoCTemplateTag {
+  color: string;
+  name: string;
+}
+
+export interface SoCTemplate {
+  name: string;
+  icon: string;
+  status: {
+    tag: 'success' | 'warn' | 'danger' | 'info';
+    name: string;
+  };
+  instance: string;
+  tags: SoCTemplateTag[];
+}
+
 // ─── Canvas / Stage Types ───────────────────────────────────────────────────
 
 export interface VeConfig {

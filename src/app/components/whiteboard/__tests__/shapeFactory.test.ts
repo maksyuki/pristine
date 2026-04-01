@@ -5,8 +5,7 @@ import { defaultVeConfig } from '../constants';
 import {
   createCircle, createTriangle, createRect, createText,
   createShape, deleteObj, copyObj, pasteObj,
-  getPolygonName, getObjectAbsolutePosition,
-  bindObjEvtHandle,
+  getPolygonName,
 } from '../shapeFactory';
 
 function makeSystemLayer(): VeSystemLayer {
@@ -46,8 +45,8 @@ describe('shapeFactory', () => {
       createCircle(100, 200, config, layers, pushState);
       const circles = layers.shape!.find('.circle');
       expect(circles.length).toBe(1);
-      expect(circles[0].x()).toBe(100);
-      expect(circles[0].y()).toBe(200);
+      expect(circles[0]!.x()).toBe(100);
+      expect(circles[0]!.y()).toBe(200);
       // shadow should be in auxBot
       expect(layers.auxBot!.getChildren().length).toBeGreaterThanOrEqual(1);
     });
@@ -58,7 +57,7 @@ describe('shapeFactory', () => {
       createTriangle(50, 60, config, layers, pushState);
       const tris = layers.shape!.find('.triangle');
       expect(tris.length).toBe(1);
-      expect(tris[0].x()).toBe(50);
+      expect(tris[0]!.x()).toBe(50);
     });
   });
 
@@ -67,7 +66,7 @@ describe('shapeFactory', () => {
       createRect(10, 20, 30, 40, config, layers, pushState);
       const rects = layers.shape!.find('.rectangle');
       expect(rects.length).toBe(1);
-      expect(rects[0].width()).toBe(30);
+      expect(rects[0]!.width()).toBe(30);
     });
 
     it('adds to comment layer when commentLayer=true', () => {
@@ -113,7 +112,7 @@ describe('shapeFactory', () => {
       createCircle(10, 20, config, layers, pushState);
       const circle = layers.shape!.find('.circle')[0];
       const auxBotChildrenBefore = layers.auxBot!.getChildren().length;
-      deleteObj(circle, layers);
+      deleteObj(circle!, layers);
       expect(layers.shape!.find('.circle').length).toBe(0);
       expect(layers.auxBot!.getChildren().length).toBeLessThan(auxBotChildrenBefore);
     });
@@ -124,7 +123,7 @@ describe('shapeFactory', () => {
       createCircle(100, 200, config, layers, pushState);
       const sys = makeSystem(layers);
       const circle = layers.shape!.find('.circle')[0];
-      sys.xfer!.nodes([circle]);
+      sys.xfer!.nodes([circle!]);
 
       copyObj(sys, layers, config);
       expect(sys.clipboard.length).toBe(1);

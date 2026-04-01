@@ -1,8 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import React from 'react';
 import { WorkspaceProvider, useWorkspace } from '../../../context/WorkspaceContext';
-import type { MainContentView } from '../../../context/WorkspaceContext';
 
 /**
  * Simple harness that exposes the mainContentView state + buttons to switch it.

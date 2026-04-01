@@ -27,17 +27,6 @@ export function getObjectAbsolutePosition(
   };
 }
 
-// ─── Shadow config builder ────────────────────────────────────────────────────
-
-function makeShadowConfig(bindObjId: number): Konva.RectConfig {
-  return {
-    x: 0, y: 0, width: 0, height: 0,
-    fill: '#FF7B17', opacity: 0.3, stroke: '#CF6412', strokeWidth: 3,
-    visible: false, dash: [20, 2], strokeScaleEnabled: false,
-    bindObjId,
-  } as Konva.RectConfig & { bindObjId: number };
-}
-
 // ─── bindObjEvtHandle ─────────────────────────────────────────────────────────
 
 export function bindObjEvtHandle(
@@ -111,7 +100,7 @@ export function bindObjEvtHandle(
       textarea.style.width = newWidth + 'px';
     };
 
-    const removeTextarea = (outsideClick = false) => {
+    const removeTextarea = () => {
       textarea.parentNode?.removeChild(textarea);
       window.removeEventListener('click', handleOutsideClick);
       window.removeEventListener('touchstart', handleOutsideClick);
@@ -140,7 +129,7 @@ export function bindObjEvtHandle(
     const handleOutsideClick = (e: Event) => {
       if (e.target !== textarea) {
         textNode.text(textarea.value);
-        removeTextarea(true);
+        removeTextarea();
       }
     };
 
@@ -335,6 +324,7 @@ export function createImage(
 ) {
   Konva.Image.fromURL(imgSrc, (image: Konva.Image) => {
     image.setAttrs({
+      image: image.image(),
       x, y, width, height,
       scaleX: 1, scaleY: 1,
       draggable: true,
@@ -410,7 +400,7 @@ export function createShape(
       break;
     case 'Rect':
       createRect(shapeData.attrs.x, shapeData.attrs.y, shapeData.attrs.width, shapeData.attrs.height,
-        veConfig, veSystemLayer, noop, undefined, undefined, false, false, veSystem);
+        veConfig, veSystemLayer, noop, undefined, undefined, false, undefined, false, veSystem);
       break;
     default:
       break;
@@ -426,7 +416,7 @@ export function deleteObj(node: Konva.Node, veSystemLayer: VeSystemLayer) {
   });
 
   for (let i = shadowObjs.length - 1; i >= 0; --i) {
-    shadowObjs[i].destroy();
+    shadowObjs[i]?.destroy();
   }
   node.destroy();
 }
@@ -445,10 +435,16 @@ export function copyObj(
       return (n as any).attrs.bindObjId && (n as any).attrs.bindObjId === id;
     });
 
+    const shadow = shadowNodes[0];
+    const layer = node.getLayer();
+    if (!shadow || !layer) {
+      return;
+    }
+
     veSystem.clipboard.push({
       obj: node,
-      shadow: shadowNodes[0],
-      layer: node.getLayer()!,
+      shadow,
+      layer,
       offset: { x: veConfig.gridSize, y: veConfig.gridSize },
     });
   });

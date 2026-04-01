@@ -3,7 +3,7 @@ import noteImageSrc from '@/assets/images/whiteboard/note.svg';
 import type {
   ToolbarButton, PenSubBarItem, EraserSubBarItem,
   ColorSubBarItem, ShapeSubBarItem, TopSubBarHomeItem,
-  VeConfig,
+  VeConfig, SoCPanelAddr, SoCTemplate,
 } from './types';
 
 // ─── Asset Exports ──────────────────────────────────────────────────────────
@@ -153,3 +153,83 @@ export const defaultVeConfig: VeConfig = {
   zoomoutScale: 0.8,
   placePictureMaxHeight: 10,
 };
+
+export const defaultSoCPanelAddr: SoCPanelAddr[] = [
+  { name: 'SPIFS', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'UART', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'QSPI', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'PSRAM', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'GPIO', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'TIMER', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'I2C', addr: '0x3000_000 - 0x3000_1000' },
+  { name: 'PWM', addr: '0x3000_000 - 0x3000_1000' },
+];
+
+export const defaultSoCTemplateList: SoCTemplate[] = [
+  {
+    name: 'ECOS retroSoC Tiny',
+    icon: 'ri-file-line',
+    status: { tag: 'success', name: 'done' },
+    instance: '<10K',
+    tags: [
+      { color: 'bg-green-500', name: 'Official' },
+      { color: 'bg-green-500', name: 'RTL done' },
+      { color: 'bg-green-500', name: 'Document done' },
+    ],
+  },
+  {
+    name: 'ECOS retroSoC Mini',
+    icon: 'ri-file-line',
+    status: { tag: 'success', name: 'done' },
+    instance: '10K~50K',
+    tags: [
+      { color: 'bg-green-500', name: 'Official' },
+      { color: 'bg-green-500', name: 'RTL done' },
+      { color: 'bg-green-500', name: 'Document done' },
+    ],
+  },
+  {
+    name: 'ECOS retroSoC Std',
+    icon: 'ri-file-line',
+    status: { tag: 'warn', name: 'feat' },
+    instance: '20K~80K',
+    tags: [
+      { color: 'bg-green-500', name: 'Official' },
+      { color: 'bg-yellow-500', name: 'RTL dev' },
+      { color: 'bg-green-500', name: 'Document done' },
+    ],
+  },
+  {
+    name: 'ECOS retroSoC Pro',
+    icon: 'ri-file-line',
+    status: { tag: 'danger', name: 'bug' },
+    instance: '60K~100K',
+    tags: [
+      { color: 'bg-green-500', name: 'Official' },
+      { color: 'bg-red-500', name: 'RTL fix bugs' },
+      { color: 'bg-green-500', name: 'Document done' },
+    ],
+  },
+  {
+    name: 'PULP Basilisk',
+    icon: 'ri-file-line',
+    status: { tag: 'info', name: 'eval' },
+    instance: 'unknown',
+    tags: [
+      { color: 'bg-yellow-500', name: '3rd party' },
+      { color: 'bg-blue-500', name: 'RTL eval' },
+      { color: 'bg-green-500', name: 'Document done' },
+    ],
+  },
+  {
+    name: 'UCB-BAR Chipyard',
+    icon: 'ri-file-line',
+    status: { tag: 'info', name: 'eval' },
+    instance: 'unknown',
+    tags: [
+      { color: 'bg-yellow-500', name: '3rd party' },
+      { color: 'bg-blue-500', name: 'RTL eval' },
+      { color: 'bg-green-500', name: 'Document done' },
+    ],
+  },
+];

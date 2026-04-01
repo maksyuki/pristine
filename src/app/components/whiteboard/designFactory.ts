@@ -1,6 +1,6 @@
 import Konva from 'konva';
 import type { VeConfig, VeSystem, VeSystemLayer, SoCInPagePanelSelected } from './types';
-import { bindObjEvtHandle, deleteObj } from './shapeFactory';
+import { bindObjEvtHandle } from './shapeFactory';
 
 // ─── Internal block helpers ───────────────────────────────────────────────────
 

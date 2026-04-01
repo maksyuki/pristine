@@ -4,7 +4,6 @@ import type { HistorySnapshot, HistoryItem, HistoryState, VeSystemLayer } from '
 
 interface UseHistoryOptions {
   maxHistory?: number;
-  memoryLimit?: number;
   getSystemLayer: () => VeSystemLayer;
   createShapeFromData: (shapeData: any) => void;
   deleteObj: (node: Konva.Node) => void;
@@ -12,7 +11,6 @@ interface UseHistoryOptions {
 
 export function useHistory({
   maxHistory = 100,
-  memoryLimit = 1024 * 8,
   getSystemLayer,
   createShapeFromData,
   deleteObj,
@@ -45,10 +43,14 @@ export function useHistory({
     });
 
     for (let i = redoStackRef.current.length - 1; i >= 0; --i) {
+      const snapshot = redoStackRef.current[i];
+      if (!snapshot) {
+        continue;
+      }
       items.push({
-        action: redoStackRef.current[i].action,
-        shapeClass: redoStackRef.current[i].shapeClass,
-        timestamp: redoStackRef.current[i].timestamp.toLocaleTimeString(),
+        action: snapshot.action,
+        shapeClass: snapshot.shapeClass,
+        timestamp: snapshot.timestamp.toLocaleTimeString(),
         active: false,
       });
     }
@@ -97,7 +99,10 @@ export function useHistory({
     const layers = getSystemLayer();
     const nodes = layers.shape?.getChildren() ?? [];
     for (let i = nodes.length - 1; i >= 0; --i) {
-      deleteObj(nodes[i]);
+      const node = nodes[i];
+      if (node) {
+        deleteObj(node);
+      }
     }
 
     if (!stateString) return;
@@ -120,7 +125,7 @@ export function useHistory({
 
   const undo = useCallback(() => {
     if (undoStackRef.current.length - 1 === 0) return;
-    const prevState = undoStackRef.current.at(-2);
+    const prevState = undoStackRef.current[undoStackRef.current.length - 2];
     restoreState(prevState ? prevState.state : null);
     const snapshot = undoStackRef.current.pop()!;
     redoStackRef.current.push(snapshot);
@@ -146,6 +151,9 @@ export function useHistory({
     } else if (idx > undoStackRef.current.length - 1) {
       const redoOffset = idx - (undoStackRef.current.length - 1);
       const snapshot = redoStackRef.current[redoStackRef.current.length - redoOffset];
+      if (!snapshot) {
+        return;
+      }
       restoreState(snapshot.state);
       for (let i = redoOffset; i >= 1; --i) {
         undoStackRef.current.push(redoStackRef.current.pop()!);

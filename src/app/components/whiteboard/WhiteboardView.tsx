@@ -6,7 +6,6 @@ import { LayerPanel } from './LayerPanel';
 import { MiniMap } from './MiniMap';
 import { HistoryPanel } from './HistoryPanel';
 import { ShapeInPagePanel } from './ShapeInPagePanel';
-import type { VeSelectedBtn } from './types';
 
 export const WhiteboardView: React.FC = () => {
   const ve = useVisualEditor();

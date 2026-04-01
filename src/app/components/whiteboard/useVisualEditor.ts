@@ -4,16 +4,14 @@ import type {
   VeSystem, VeSystemLayer, VeStageState, VeConfig, VeSelectedBtn,
   SelectedRectPosition, LayerControl,
   PicUploadData, ShapeInPagePanelState, ShapeInPagePanelTool,
-  ClipboardItem,
 } from './types';
 import { defaultVeConfig } from './constants';
 import { useHistory } from './useHistory';
 import { useKeyboard } from './useKeyboard';
 import {
   createCircle, createTriangle, createRect, createText, createImage,
-  createShape as createShapeFromSnapshot, bindObjEvtHandle, deleteObj as deleteObjUtil,
+  createShape as createShapeFromSnapshot, deleteObj as deleteObjUtil,
   copyObj as copyObjUtil, pasteObj as pasteObjUtil, getPolygonName,
-  getObjectAbsolutePosition,
 } from './shapeFactory';
 
 export function useVisualEditor() {
@@ -44,7 +42,7 @@ export function useVisualEditor() {
   const [veIsCodeFreeze, setVeIsCodeFreeze] = useState(false);
   const [wbTheme, setWbTheme] = useState<'light' | 'dark'>('dark');
   const toggleWbTheme = useCallback(() => setWbTheme((t) => (t === 'light' ? 'dark' : 'light')), []);
-  const [veKeyboardKey, setVeKeyboardKey] = useState('none');
+  const [, setVeKeyboardKey] = useState('none');
   const [isTopBarLeftHomeBtnClick, setIsTopBarLeftHomeBtnClick] = useState(false);
 
   // Layer controls
@@ -65,7 +63,7 @@ export function useVisualEditor() {
   const [veShapeInPagePanelState, setVeShapeInPagePanelState] = useState<ShapeInPagePanelState>({
     top: 0, left: 0, display: 'none',
   });
-  const [veShapeInPagePanelTool, setVeShapeInPagePanelTool] = useState<ShapeInPagePanelTool>({
+  const [veShapeInPagePanelTool] = useState<ShapeInPagePanelTool>({
     borderColorPicker: null, borderColor: 'rgba(255, 0, 0, 1)', borderType: 'line',
     borderStroke: 1, fillColorPicker: null, fillColor: 'rgba(255, 0, 0, 1)',
   });
@@ -299,13 +297,19 @@ export function useVisualEditor() {
         const metaPressed = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
         const isSelected = (system.xfer?.nodes().indexOf(e.target) ?? -1) >= 0;
 
-        let target = e.target;
+        let target: Konva.Node = e.target;
         let rootGroup = target.findAncestors('.block');
         if (rootGroup.length > 0) {
-          target = rootGroup[0];
+          const firstGroup = rootGroup[0];
+          if (firstGroup) {
+            target = firstGroup;
+          }
         } else {
           rootGroup = target.findAncestors('.soc1');
-          if (rootGroup.length > 0) target = rootGroup[0];
+          const firstGroup = rootGroup[0];
+          if (firstGroup) {
+            target = firstGroup;
+          }
         }
 
         if (target.hasName('circle') || target.hasName('triangle') || target.hasName('rectangle') ||
@@ -351,6 +355,9 @@ export function useVisualEditor() {
       case 'picture': {
         const picIndex = parseInt(e.dataTransfer?.getData('elem-idx') ?? '0', 10);
         const picData = vePicPreviewDataList[picIndex];
+        if (!picData) {
+          break;
+        }
         if (picData.size !== 0 && picData.uploadImg) {
           const width = picData.uploadImg.width;
           const height = picData.uploadImg.height;
@@ -379,12 +386,18 @@ export function useVisualEditor() {
     const nodes = xfer.nodes();
     if (nodes.length > 0) {
       if (nodes.length === 1) {
-        pushState('delete', (nodes[0] as any).attrs.bindObjId ?? -1, getPolygonName(nodes[0]));
+        const firstNode = nodes[0];
+        if (firstNode) {
+          pushState('delete', (firstNode as any).attrs.bindObjId ?? -1, getPolygonName(firstNode));
+        }
       } else {
         pushState('delete', -1, 'Shapes');
       }
       for (let i = nodes.length - 1; i >= 0; --i) {
-        deleteObj(nodes[i]);
+        const node = nodes[i];
+        if (node) {
+          deleteObj(node);
+        }
       }
       xfer.nodes([]);
     }
@@ -476,6 +489,9 @@ export function useVisualEditor() {
     const input = e.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
+    if (!file) {
+      return;
+    }
     if (!file.type.match('image.*')) {
       alert('Please select a valid image format (JPG, PNG, GIF...)');
       return;

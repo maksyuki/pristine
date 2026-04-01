@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ToolbarButton, WhiteboardTheme } from './types';
+import type { WhiteboardTheme } from './types';
 import { topBarLeft, topBarRight } from './constants';
 
 interface TopBarProps {

@@ -31,14 +31,14 @@ describe('designFactory', () => {
       createBlockTemplate(100, 200, config, layers, pushState);
       const blocks = layers.design!.find('.block');
       expect(blocks.length).toBe(1);
-      expect(blocks[0].x()).toBe(100);
-      expect(blocks[0].y()).toBe(200);
+      expect(blocks[0]!.x()).toBe(100);
+      expect(blocks[0]!.y()).toBe(200);
     });
 
     it('creates the block with opacity 0.3 (preview mode)', () => {
       createBlockTemplate(0, 0, config, layers, pushState);
       const block = layers.design!.find('.block')[0];
-      expect(block.opacity()).toBe(0.3);
+      expect(block!.opacity()).toBe(0.3);
     });
 
     it('adds a shadow to auxBot', () => {
@@ -65,7 +65,7 @@ describe('designFactory', () => {
     it('starts with opacity 0.3', () => {
       createSoC1Template(50, 60, config, layers, pushState);
       const soc = layers.design!.find('.soc1')[0];
-      expect(soc.opacity()).toBe(0.3);
+      expect(soc!.opacity()).toBe(0.3);
     });
   });
 });

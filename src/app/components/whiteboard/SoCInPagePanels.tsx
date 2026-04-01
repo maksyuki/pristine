@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SoCInPagePanelSelected, SoCPanelAddr } from './types';
+import type { SoCInPagePanelSelected } from './types';
 import { defaultSoCPanelAddr } from './constants';
 
 interface SoCInPagePanelsProps {

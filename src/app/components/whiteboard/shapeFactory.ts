@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import type { VeConfig, VeSystem, VeSystemLayer } from './types';
+import type { VeConfig, VeSystem, VeSystemLayer, WhiteboardLayerName } from './types';
 
 // ─── Name utility ─────────────────────────────────────────────────────────────
 
@@ -169,22 +169,30 @@ export function bindObjEvtHandle(
     pushState('move', (obj as any)._id, getPolygonName(obj));
   });
 
-  // Drag move: update shadow position (soc1 special case)
-  if (obj.hasName('soc1')) {
-    obj.on('dragmove', () => {
-      shadowObj.position({
-        x: Math.round(obj.x() / veConfig.gridSize - 1) * veConfig.gridSize,
-        y: Math.round(obj.y() / veConfig.gridSize - 1) * veConfig.gridSize,
-      });
+  obj.on('dragmove', () => {
+    shadowObj.position({
+      x: Math.round(obj.x() / veConfig.gridSize) * veConfig.gridSize,
+      y: Math.round(obj.y() / veConfig.gridSize) * veConfig.gridSize,
     });
-  } else {
-    obj.on('dragmove', () => {
-      shadowObj.position({
-        x: Math.round(obj.x() / veConfig.gridSize) * veConfig.gridSize,
-        y: Math.round(obj.y() / veConfig.gridSize) * veConfig.gridSize,
-      });
-    });
+  });
+}
+
+function addNodeToLayer(
+  veSystemLayer: VeSystemLayer,
+  boardLayer: WhiteboardLayerName,
+  node: Konva.Shape | Konva.Group,
+) {
+  if (boardLayer === 'comment') {
+    veSystemLayer.comment!.add(node);
+    return;
   }
+
+  if (boardLayer === 'design') {
+    veSystemLayer.design!.add(node);
+    return;
+  }
+
+  veSystemLayer.shape!.add(node);
 }
 
 // ─── createCircle ─────────────────────────────────────────────────────────────
@@ -194,6 +202,7 @@ export function createCircle(
   veConfig: VeConfig, veSystemLayer: VeSystemLayer,
   pushState: (a: string, id: number, cls: string) => void,
   veSystem?: VeSystem,
+  boardLayer: WhiteboardLayerName = 'shape',
 ) {
   const circle = new Konva.Circle({
     x, y,
@@ -204,6 +213,7 @@ export function createCircle(
     draggable: true,
     name: 'circle',
     strokeScaleEnabled: false,
+    boardLayer,
   });
 
   const shadowCircle = new Konva.Circle({
@@ -217,7 +227,7 @@ export function createCircle(
     veSystem ?? { stage: null, xfer: null, resizeObsvr: null, grid: null, clipboard: [], history: null, selectedRect: null, picUploadInputer: null },
     pushState);
   veSystemLayer.auxBot!.add(shadowCircle);
-  veSystemLayer.shape!.add(circle);
+  addNodeToLayer(veSystemLayer, boardLayer, circle);
 }
 
 // ─── createTriangle ───────────────────────────────────────────────────────────
@@ -227,6 +237,7 @@ export function createTriangle(
   veConfig: VeConfig, veSystemLayer: VeSystemLayer,
   pushState: (a: string, id: number, cls: string) => void,
   veSystem?: VeSystem,
+  boardLayer: WhiteboardLayerName = 'shape',
 ) {
   const triangle = new Konva.RegularPolygon({
     x, y,
@@ -238,6 +249,7 @@ export function createTriangle(
     draggable: true,
     name: 'triangle',
     strokeScaleEnabled: false,
+    boardLayer,
   });
 
   const shadowTriangle = new Konva.RegularPolygon({
@@ -251,7 +263,60 @@ export function createTriangle(
     veSystem ?? { stage: null, xfer: null, resizeObsvr: null, grid: null, clipboard: [], history: null, selectedRect: null, picUploadInputer: null },
     pushState);
   veSystemLayer.auxBot!.add(shadowTriangle);
-  veSystemLayer.shape!.add(triangle);
+  addNodeToLayer(veSystemLayer, boardLayer, triangle);
+}
+
+export function createPolygon(
+  x: number,
+  y: number,
+  sides: number,
+  radius: number,
+  name: string,
+  veConfig: VeConfig,
+  veSystemLayer: VeSystemLayer,
+  pushState: (a: string, id: number, cls: string) => void,
+  veSystem?: VeSystem,
+  boardLayer: WhiteboardLayerName = 'shape',
+) {
+  const polygon = new Konva.RegularPolygon({
+    x,
+    y,
+    sides,
+    radius,
+    fill: veConfig.shapeFillColor,
+    stroke: 'white',
+    strokeWidth: 2,
+    draggable: true,
+    name,
+    strokeScaleEnabled: false,
+    boardLayer,
+  });
+
+  const shadowPolygon = new Konva.RegularPolygon({
+    x: 0,
+    y: 0,
+    sides,
+    radius: 0,
+    fill: '#FF7B17',
+    opacity: 0.3,
+    stroke: '#CF6412',
+    strokeWidth: 3,
+    visible: false,
+    dash: [20, 2],
+    strokeScaleEnabled: false,
+    bindObjId: (polygon as any)._id,
+  } as any);
+
+  bindObjEvtHandle(
+    polygon,
+    shadowPolygon,
+    veConfig,
+    veSystem ?? { stage: null, xfer: null, resizeObsvr: null, grid: null, clipboard: [], history: null, selectedRect: null, picUploadInputer: null },
+    pushState,
+  );
+
+  veSystemLayer.auxBot!.add(shadowPolygon);
+  addNodeToLayer(veSystemLayer, boardLayer, polygon);
 }
 
 // ─── createRect ───────────────────────────────────────────────────────────────
@@ -266,7 +331,9 @@ export function createRect(
   shadowColor = 'rgba(0,0,0,0.4)',
   commentLayer = false,
   veSystem?: VeSystem,
+  boardLayer?: WhiteboardLayerName,
 ) {
+  const resolvedBoardLayer = boardLayer ?? (commentLayer ? 'comment' : 'shape');
   const fill = fillColor ?? veConfig.shapeFillColor;
   let defaultConfig: any = {
     x, y, width, height,
@@ -277,6 +344,7 @@ export function createRect(
     strokeScaleEnabled: false,
     cornerRadius: 8,
     name: 'rectangle',
+    boardLayer: resolvedBoardLayer,
   };
 
   if (hasShadow) {
@@ -307,11 +375,7 @@ export function createRect(
     pushState);
 
   veSystemLayer.auxBot!.add(shadowRectangle);
-  if (commentLayer) {
-    veSystemLayer.comment!.add(rectangle);
-  } else {
-    veSystemLayer.shape!.add(rectangle);
-  }
+  addNodeToLayer(veSystemLayer, resolvedBoardLayer, rectangle);
 }
 
 // ─── createImage ──────────────────────────────────────────────────────────────
@@ -321,6 +385,7 @@ export function createImage(
   veConfig: VeConfig, veSystemLayer: VeSystemLayer,
   pushState: (a: string, id: number, cls: string) => void,
   veSystem?: VeSystem,
+  onCreated?: (image: Konva.Image) => void,
 ) {
   Konva.Image.fromURL(imgSrc, (image: Konva.Image) => {
     image.setAttrs({
@@ -331,6 +396,8 @@ export function createImage(
       cornerRadius: 0,
       name: 'image',
       strokeScaleEnabled: false,
+      boardLayer: 'comment',
+      imageSrc: imgSrc,
     });
 
     const shadowImage = new Konva.Rect({
@@ -344,7 +411,8 @@ export function createImage(
       veSystem ?? { stage: null, xfer: null, resizeObsvr: null, grid: null, clipboard: [], history: null, selectedRect: null, picUploadInputer: null },
       pushState);
     veSystemLayer.auxBot!.add(shadowImage);
-    veSystemLayer.comment!.add(image);
+    addNodeToLayer(veSystemLayer, 'comment', image);
+    onCreated?.(image);
   });
 }
 
@@ -366,6 +434,7 @@ export function createText(
     name: 'text',
     draggable: true,
     strokeScaleEnabled: false,
+    boardLayer: 'comment',
   });
 
   const shadowText = new Konva.Rect({
@@ -379,7 +448,27 @@ export function createText(
     veSystem ?? { stage: null, xfer: null, resizeObsvr: null, grid: null, clipboard: [], history: null, selectedRect: null, picUploadInputer: null },
     pushState);
   veSystemLayer.auxBot!.add(shadowText);
-  veSystemLayer.comment!.add(text);
+  addNodeToLayer(veSystemLayer, 'comment', text);
+}
+
+export function createFreehandLine(
+  points: number[],
+  attrs: Partial<Konva.LineConfig>,
+  veSystemLayer: VeSystemLayer,
+) {
+  const line = new Konva.Line({
+    points,
+    lineCap: 'round',
+    lineJoin: 'round',
+    tension: 0.2,
+    listening: false,
+    draggable: false,
+    boardLayer: 'comment',
+    ...attrs,
+  });
+
+  addNodeToLayer(veSystemLayer, 'comment', line);
+  return line;
 }
 
 // ─── createShape (restore from history) ───────────────────────────────────────
@@ -393,14 +482,51 @@ export function createShape(
   const noop = pushState ?? (() => {});
   switch (shapeData.type) {
     case 'Circle':
-      createCircle(shapeData.attrs.x, shapeData.attrs.y, veConfig, veSystemLayer, noop, veSystem);
+      createCircle(shapeData.attrs.x, shapeData.attrs.y, veConfig, veSystemLayer, noop, veSystem, shapeData.attrs.boardLayer ?? 'shape');
       break;
     case 'RegularPolygon':
-      createTriangle(shapeData.attrs.x, shapeData.attrs.y, veConfig, veSystemLayer, noop, veSystem);
+      if (!shapeData.attrs.name || shapeData.attrs.name === 'triangle' || shapeData.attrs.sides === 3) {
+        createTriangle(shapeData.attrs.x, shapeData.attrs.y, veConfig, veSystemLayer, noop, veSystem, shapeData.attrs.boardLayer ?? 'shape');
+      } else {
+        createPolygon(
+          shapeData.attrs.x,
+          shapeData.attrs.y,
+          shapeData.attrs.sides ?? 5,
+          shapeData.attrs.radius ?? veConfig.gridSize * 3,
+          shapeData.attrs.name ?? 'pentagon',
+          veConfig,
+          veSystemLayer,
+          noop,
+          veSystem,
+          shapeData.attrs.boardLayer ?? 'shape',
+        );
+      }
       break;
     case 'Rect':
       createRect(shapeData.attrs.x, shapeData.attrs.y, shapeData.attrs.width, shapeData.attrs.height,
-        veConfig, veSystemLayer, noop, undefined, undefined, false, undefined, false, veSystem);
+        veConfig, veSystemLayer, noop, shapeData.attrs.stroke, shapeData.attrs.fill, false, undefined,
+        shapeData.attrs.boardLayer === 'comment', veSystem, shapeData.attrs.boardLayer ?? 'shape');
+      break;
+    case 'Text':
+      createText(shapeData.attrs.x, shapeData.attrs.y, shapeData.attrs.text ?? '', veConfig, veSystemLayer, noop, veSystem, shapeData.attrs.fill ?? 'white');
+      break;
+    case 'Image':
+      if (shapeData.attrs.imageSrc) {
+        createImage(
+          shapeData.attrs.x,
+          shapeData.attrs.y,
+          shapeData.attrs.width,
+          shapeData.attrs.height,
+          shapeData.attrs.imageSrc,
+          veConfig,
+          veSystemLayer,
+          noop,
+          veSystem,
+        );
+      }
+      break;
+    case 'Line':
+      createFreehandLine(shapeData.attrs.points ?? [], shapeData.attrs, veSystemLayer);
       break;
     default:
       break;

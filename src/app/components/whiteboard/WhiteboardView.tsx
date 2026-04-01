@@ -78,11 +78,7 @@ export const WhiteboardView: React.FC = () => {
         onSetSelectedEraserSubBarFirst={ve.setSelectedEraserSubBarFirst}
         onSetSelectedShapeSubBarFirst={ve.setSelectedShapeSubBarFirst}
         picUploadInputRef={ve.picUploadInputRef}
-        onImageFileUpload={(e) => {
-          // dispatch native Event to hook handler
-          const nativeEvt = e.nativeEvent;
-          ve.picUploadInputRef.current?.dispatchEvent?.(nativeEvt);
-        }}
+        onImageFileUpload={ve.handleImageFileUpload}
       />
 
       <LayerPanel
@@ -104,6 +100,7 @@ export const WhiteboardView: React.FC = () => {
         veStageState={ve.veStageState}
         previewImgRef={ve.previewImgRef}
         onZoom={ve.handleVEZoom}
+        onZoomReset={ve.handleVEZoomReset}
       />
 
       <HistoryPanel

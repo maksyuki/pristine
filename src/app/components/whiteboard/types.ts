@@ -35,29 +35,6 @@ export interface TopSubBarHomeItem {
   tooltip: string;
 }
 
-export type SoCInPagePanelSelected = 'none' | 'CORE' | 'RCU' | 'BUS';
-
-export interface SoCPanelAddr {
-  name: string;
-  addr: string;
-}
-
-export interface SoCTemplateTag {
-  color: string;
-  name: string;
-}
-
-export interface SoCTemplate {
-  name: string;
-  icon: string;
-  status: {
-    tag: 'success' | 'warn' | 'danger' | 'info';
-    name: string;
-  };
-  instance: string;
-  tags: SoCTemplateTag[];
-}
-
 // ─── Canvas / Stage Types ───────────────────────────────────────────────────
 
 export interface VeConfig {
@@ -120,6 +97,8 @@ export interface PicUploadData {
   uploadImg: HTMLImageElement | null;
   size: number;
 }
+
+export type WhiteboardLayerName = 'shape' | 'design' | 'comment';
 
 // ─── Shape In-Page Panel Types ──────────────────────────────────────────────
 
@@ -186,7 +165,7 @@ export interface VeHistory {
 
 export type VeSelectedBtn =
   | 'select' | 'grab' | 'undo' | 'redo'
-  | 'pen' | 'eraser' | 'text' | 'rtl' | 'image' | 'shape' | 'wire' | 'report';
+  | 'pen' | 'eraser' | 'text' | 'image' | 'shape';
 
 export interface SelectedRectPosition {
   xPos1: number;

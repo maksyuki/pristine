@@ -88,6 +88,10 @@ export function useHistory({
       layerState.push({ id: node._id, type: node.getClassName(), attrs: node.getAttrs() });
     });
 
+    layers.comment?.getChildren().forEach((node) => {
+      layerState.push({ id: node._id, type: node.getClassName(), attrs: node.getAttrs() });
+    });
+
     return {
       action, shapeId, shapeClass,
       state: JSON.stringify(layerState),
@@ -97,13 +101,17 @@ export function useHistory({
 
   const restoreState = useCallback((stateString: string | null) => {
     const layers = getSystemLayer();
-    const nodes = layers.shape?.getChildren() ?? [];
-    for (let i = nodes.length - 1; i >= 0; --i) {
-      const node = nodes[i];
-      if (node) {
-        deleteObj(node);
+    const layerGroups = [layers.shape, layers.design, layers.comment];
+
+    layerGroups.forEach((group) => {
+      const nodes = group?.getChildren() ?? [];
+      for (let i = nodes.length - 1; i >= 0; --i) {
+        const node = nodes[i];
+        if (node) {
+          deleteObj(node);
+        }
       }
-    }
+    });
 
     if (!stateString) return;
 

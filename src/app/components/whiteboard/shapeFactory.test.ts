@@ -4,7 +4,7 @@ import type { VeConfig, VeSystem, VeSystemLayer } from './types';
 import { defaultVeConfig } from './constants';
 import {
   createCircle, createTriangle, createRect, createText,
-  createShape, deleteObj, copyObj, pasteObj,
+  createPolygon, createFreehandLine, createShape, deleteObj, copyObj, pasteObj,
   getPolygonName,
 } from './shapeFactory';
 
@@ -61,6 +61,15 @@ describe('shapeFactory', () => {
     });
   });
 
+  describe('createPolygon', () => {
+    it('adds a polygon with the provided name to the shape layer', () => {
+      createPolygon(75, 90, 8, 24, 'octagon', config, layers, pushState);
+      const polygons = layers.shape!.find('.octagon');
+      expect(polygons.length).toBe(1);
+      expect((polygons[0] as Konva.RegularPolygon).sides()).toBe(8);
+    });
+  });
+
   describe('createRect', () => {
     it('adds a rectangle to the shape layer by default', () => {
       createRect(10, 20, 30, 40, config, layers, pushState);
@@ -85,6 +94,15 @@ describe('shapeFactory', () => {
     });
   });
 
+  describe('createFreehandLine', () => {
+    it('adds a freehand line to the comment layer', () => {
+      createFreehandLine([0, 0, 10, 10], { stroke: '#000', strokeWidth: 4, name: 'pen-stroke' }, layers);
+      const lines = layers.comment!.find('Line');
+      expect(lines.length).toBe(1);
+      expect((lines[0] as Konva.Line).points()).toEqual([0, 0, 10, 10]);
+    });
+  });
+
   describe('createShape (restore dispatch)', () => {
     it('restores a Circle from snapshot data', () => {
       createShape({ type: 'Circle', attrs: { x: 10, y: 20 } }, config, layers, pushState);
@@ -96,9 +114,19 @@ describe('shapeFactory', () => {
       expect(layers.shape!.find('.triangle').length).toBe(1);
     });
 
+    it('restores a RegularPolygon as octagon when sides are provided', () => {
+      createShape({ type: 'RegularPolygon', attrs: { x: 30, y: 40, sides: 8, radius: 24, name: 'octagon' } }, config, layers, pushState);
+      expect(layers.shape!.find('.octagon').length).toBe(1);
+    });
+
     it('restores a Rect from snapshot data', () => {
       createShape({ type: 'Rect', attrs: { x: 10, y: 20, width: 50, height: 60 } }, config, layers, pushState);
       expect(layers.shape!.find('.rectangle').length).toBe(1);
+    });
+
+    it('restores a Line into the comment layer', () => {
+      createShape({ type: 'Line', attrs: { points: [1, 2, 3, 4], stroke: '#111', strokeWidth: 3 } }, config, layers, pushState);
+      expect(layers.comment!.find('Line').length).toBe(1);
     });
 
     it('ignores unknown types', () => {

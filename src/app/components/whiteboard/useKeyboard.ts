@@ -19,7 +19,7 @@ interface UseKeyboardOptions {
 
 const toolShortcuts: Record<string, VeSelectedBtn> = {
   s: 'select', g: 'grab', q: 'pen', e: 'eraser',
-  t: 'text', b: 'rtl', i: 'image', d: 'shape', w: 'wire', r: 'report',
+  t: 'text', i: 'image', d: 'shape',
 };
 
 export function useKeyboard({

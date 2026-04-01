@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertCircle,
   Wrench,
   FileCode2,
 } from "lucide-react";
-import { staticChecks } from "../../data/mockData";
+import { useStaticChecks } from '../../data/mockDataLoader';
 
 const severityConfig: Record<
   "critical" | "high" | "medium" | "low",
@@ -29,6 +29,7 @@ export function StaticCheckPanel({
   onFileOpen,
   onLineJump,
 }: StaticCheckPanelProps) {
+  const staticChecks = useStaticChecks();
   const [filter, setFilter] = useState<
     "all" | "critical" | "high" | "medium" | "low"
   >("all");
@@ -40,13 +41,18 @@ export function StaticCheckPanel({
     filter === "all"
       ? staticChecks
       : staticChecks.filter((c) => c.severity === filter);
-  const counts: Record<"critical" | "high" | "medium" | "low", number> = {
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-  };
-  staticChecks.forEach((c) => counts[c.severity]++);
+  const counts = useMemo(() => {
+    const nextCounts: Record<"critical" | "high" | "medium" | "low", number> = {
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
+    };
+    staticChecks.forEach((check) => {
+      nextCounts[check.severity] += 1;
+    });
+    return nextCounts;
+  }, [staticChecks]);
 
   return (
     <div className="flex flex-col h-full">

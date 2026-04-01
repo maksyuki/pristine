@@ -3,11 +3,12 @@ import {
   FilePlus, FolderPlus, RefreshCw, ChevronsUpDown,
   AlertCircle, AlertTriangle, Info, Circle,
 } from 'lucide-react';
-import { Problem, problemsList, fileOutlines } from '../../data/mockData';
+import { useFileOutlines, useProblemsList } from '../../data/mockDataLoader';
 import { FileTreeNode } from './FileTreeNode';
 import { OutlineNode } from './OutlineNode';
 import { DEFAULT_STARTUP_PROJECT_NAME } from '../workspace/workspaceFiles';
 import { useWorkspaceTree, type WorkspaceRevealRequest } from '../workspace/useWorkspaceTree';
+import type { Problem } from '../../data/mockData';
 
 interface LeftSidePanelProps {
   activeFileId: string;
@@ -35,6 +36,8 @@ export function LeftSidePanel({
 }: LeftSidePanelProps) {
   const [tab, setTab] = useState<'explorer' | 'outline' | 'problems'>('explorer');
   const [problemFilter, setProblemFilter] = useState<'all' | 'error' | 'warning'>('all');
+  const problemsList = useProblemsList();
+  const fileOutlines = useFileOutlines();
   const {
     treeNodes,
     workspaceAvailable,
@@ -49,10 +52,10 @@ export function LeftSidePanel({
     problemFilter === 'all'
       ? problemsList
       : problemsList.filter((p) => p.severity === problemFilter),
-    [problemFilter]
+    [problemFilter, problemsList]
   );
-  const errorCount = useMemo(() => problemsList.filter((p) => p.severity === 'error').length, []);
-  const warnCount = useMemo(() => problemsList.filter((p) => p.severity === 'warning').length, []);
+  const errorCount = useMemo(() => problemsList.filter((p) => p.severity === 'error').length, [problemsList]);
+  const warnCount = useMemo(() => problemsList.filter((p) => p.severity === 'warning').length, [problemsList]);
 
   return (
     <div className="ide-sidebar-scope flex flex-col h-full bg-ide-sidebar-bg overflow-hidden">

@@ -1,15 +1,16 @@
-import { useState, useMemo } from 'react';
+import { Suspense, lazy, useMemo, useState } from 'react';
 import {
   Terminal, X, Plus,
   AlertCircle, AlertTriangle,
   Bug, Square,
 } from 'lucide-react';
-import { problemsList } from '../../data/mockData';
+import { useProblemsList } from '../../data/mockDataLoader';
 import { TerminalPanel } from './TerminalPanel';
-import { OutputPanel } from './OutputPanel';
-import { ProblemsTabPanel } from './ProblemsTabPanel';
 import { DebugConsole } from './DebugConsole';
 import { terminateTerminalSession } from './terminalSessionStore';
+
+const OutputPanel = lazy(() => import('./OutputPanel').then((module) => ({ default: module.OutputPanel })));
+const ProblemsTabPanel = lazy(() => import('./ProblemsTabPanel').then((module) => ({ default: module.ProblemsTabPanel })));
 
 interface BottomPanelProps {
   onClose?: () => void;
@@ -17,6 +18,7 @@ interface BottomPanelProps {
 
 export function BottomPanel({ onClose }: BottomPanelProps) {
   const [tab, setTab] = useState<'terminal' | 'output' | 'problems' | 'debug'>('terminal');
+  const problemsList = useProblemsList();
 
   const handleClose = () => {
     void terminateTerminalSession().finally(() => {
@@ -31,8 +33,8 @@ export function BottomPanel({ onClose }: BottomPanelProps) {
     { id: 'debug', label: 'Debug Console', icon: Bug },
   ] as const;
 
-  const errCount = useMemo(() => problemsList.filter((p) => p.severity === 'error').length, []);
-  const warnCount = useMemo(() => problemsList.filter((p) => p.severity === 'warning').length, []);
+  const errCount = useMemo(() => problemsList.filter((p) => p.severity === 'error').length, [problemsList]);
+  const warnCount = useMemo(() => problemsList.filter((p) => p.severity === 'warning').length, [problemsList]);
 
   return (
     <div className="flex flex-col h-full bg-ide-bg border-t border-ide-border overflow-hidden">
@@ -76,7 +78,11 @@ export function BottomPanel({ onClose }: BottomPanelProps) {
       {/* Panel content */}
       <div className="flex-1 overflow-hidden">
         {tab === 'terminal' && <TerminalPanel />}
-        {tab === 'output' && <OutputPanel />}
+        {tab === 'output' && (
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-ide-text-muted text-[12px]">Loading output...</div>}>
+            <OutputPanel />
+          </Suspense>
+        )}
         {tab === 'problems' && (
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-2 px-3 py-1 border-b border-ide-border shrink-0">
@@ -85,7 +91,9 @@ export function BottomPanel({ onClose }: BottomPanelProps) {
               <AlertTriangle size={11} className="text-ide-warning" />
               <span className="text-ide-warning text-[11px]">{warnCount} warnings</span>
             </div>
-            <ProblemsTabPanel />
+            <Suspense fallback={<div className="flex h-full items-center justify-center text-ide-text-muted text-[12px]">Loading problems...</div>}>
+              <ProblemsTabPanel />
+            </Suspense>
           </div>
         )}
         {tab === 'debug' && (

@@ -2,40 +2,36 @@ import { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
   Bot,
-  User,
-  Code2,
   ChevronUp,
-  Wrench,
   FileCode2,
-  Lightbulb,
-  Zap,
   RefreshCw,
   ArrowUp,
   Plus,
   Cpu,
   X,
-  Image,
-  FileText,
-  Check,
 } from "lucide-react";
-import { initialAIMessages, AIMessage } from "../../data/mockData";
+import {
+  AGENT_COLORS,
+  AGENT_OPTIONS,
+  ATTACH_OPTIONS,
+  Check,
+  DEFAULT_MODEL,
+  MODEL_OPTIONS,
+  QUICK_ACTIONS,
+  getTokenLimitForModel,
+  type AssistantAgentMode,
+} from './aiAssistant/config';
+import { MessageThread } from './aiAssistant/MessageThread';
+import { useAIConversation } from './aiAssistant/useAIConversation';
 
 // ─── AI Assistant Panel ────────────────────────────────────────────────────────
 export function AIAssistantPanel() {
-  const [messages, setMessages] = useState<AIMessage[]>(
-    initialAIMessages,
-  );
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const { input, isTyping, messages, setInput, sendMessage, clearConversation } = useAIConversation();
   const [agentOpen, setAgentOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<
-    "agent" | "ask" | "edit"
-  >("agent");
-  const [selectedModel, setSelectedModel] = useState(
-    "Claude Opus 4.6",
-  );
+  const [selectedAgent, setSelectedAgent] = useState<AssistantAgentMode>('agent');
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -62,115 +58,9 @@ export function AIAssistantPanel() {
     el.style.height = Math.min(el.scrollHeight, 120) + "px";
   };
 
-  const simulatedResponses = {
-    default:
-      "I understand your question. Based on the current RTL code context, I recommend checking the signal drive logic and timing constraints. Would you like me to generate a specific code example?",
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    const userMsg: AIMessage = {
-      id: `m${Date.now()}`,
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date().toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const aiMsg: AIMessage = {
-        id: `m${Date.now() + 1}`,
-        role: "assistant",
-        content: simulatedResponses.default,
-        timestamp: new Date().toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        codeBlock:
-          input.toLowerCase().includes("code") ||
-          input.toLowerCase().includes("generate")
-            ? `// AI-generated code example\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        q <= '0;\n    else\n        q <= d;\nend`
-            : undefined,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1200);
-  };
-
-  const quickActions = [
-    { label: "Explain Code", icon: Lightbulb },
-    { label: "Optimize Design", icon: Zap },
-    { label: "Generate Testbench", icon: Code2 },
-    { label: "Fix Bug", icon: Wrench },
-  ];
-
-  const agents = [
-    {
-      id: "agent",
-      label: "Agent",
-      desc: "Autonomous multi-step tasks",
-    },
-    {
-      id: "ask",
-      label: "Ask",
-      desc: "Ask questions about code",
-    },
-    {
-      id: "edit",
-      label: "Edit",
-      desc: "Make targeted code edits",
-    },
-  ] as const;
-
-  const models = [
-    {
-      id: "Claude Opus 4.6",
-      label: "Claude Opus 4.6",
-      tokens: "200k",
-    },
-    {
-      id: "Claude Sonnet 4.6",
-      label: "Claude Sonnet 4.6",
-      tokens: "200k",
-    },
-    { id: "GPT-5.4", label: "GPT-5.4", tokens: "128k" },
-    { id: "Gemini 3 Pro", label: "Gemini 3 Pro", tokens: "1M" },
-  ];
-
-  const attachOptions = [
-    {
-      icon: FileCode2,
-      label: "Add File",
-      desc: "Attach a source file",
-    },
-    {
-      icon: Image,
-      label: "Add Image",
-      desc: "Attach a screenshot or diagram",
-    },
-    {
-      icon: FileText,
-      label: "Add Context",
-      desc: "Add selection or symbol",
-    },
-  ];
-
   // Token usage mock
   const usedTokens = 2417;
-  const maxTokens =
-    selectedModel === "Gemini 1.5 Pro"
-      ? 1000000
-      : selectedModel.includes("Claude")
-        ? 200000
-        : 128000;
+  const maxTokens = getTokenLimitForModel(selectedModel);
   const tokenPct = Math.min(
     (usedTokens / maxTokens) * 100,
     100,
@@ -183,12 +73,6 @@ export function AIAssistantPanel() {
     maxTokens >= 1000000
       ? `${maxTokens / 1000000}M`
       : `${maxTokens / 1000}k`;
-
-  const agentColors: Record<string, string> = {
-    agent: "#c586c0",
-    ask: "#4ec9b0",
-    edit: "#dcdcaa",
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -204,6 +88,12 @@ export function AIAssistantPanel() {
           <button
             className="p-1 text-ide-text-muted hover:text-ide-text transition-colors"
             title="Clear conversation"
+            onClick={() => {
+              clearConversation();
+              if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto';
+              }
+            }}
           >
             <RefreshCw size={12} />
           </button>
@@ -212,7 +102,7 @@ export function AIAssistantPanel() {
 
       {/* Quick actions */}
       <div className="flex flex-wrap gap-1 px-2 py-1.5 border-b border-ide-border shrink-0">
-        {quickActions.map(({ label, icon: Icon }) => (
+        {QUICK_ACTIONS.map(({ label, icon: Icon }) => (
           <button
             key={label}
             className="flex items-center gap-1 px-2 py-0.5 bg-ide-tab-bg hover:bg-ide-accent-dark text-ide-text-muted hover:text-white rounded transition-colors text-[11px]"
@@ -224,125 +114,7 @@ export function AIAssistantPanel() {
         ))}
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-3">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-          >
-            {/* Avatar */}
-            <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                msg.role === "assistant"
-                  ? "bg-ide-syntax-keyword"
-                  : "bg-ide-accent"
-              }`}
-            >
-              {msg.role === "assistant" ? (
-                <Bot size={13} className="text-white" />
-              ) : (
-                <User size={13} className="text-white" />
-              )}
-            </div>
-
-            <div
-              className={`flex flex-col gap-1 max-w-[85%] ${msg.role === "user" ? "items-end" : "items-start"}`}
-            >
-              <div
-                className={`px-2.5 py-2 rounded-lg ${
-                  msg.role === "user"
-                    ? "bg-ide-accent-dark text-white"
-                    : "bg-ide-tab-bg text-ide-text"
-                }`}
-              >
-                <div className="text-[12px] leading-[1.5] whitespace-pre-wrap">
-                  {msg.content.split("\n").map((line, i) => {
-                    const parts = line.split(/\*\*(.*?)\*\*/g);
-                    return (
-                      <div key={i}>
-                        {parts.map((part, j) =>
-                          j % 2 === 1 ? (
-                            <strong
-                              key={j}
-                              className="text-white"
-                            >
-                              {part}
-                            </strong>
-                          ) : part.includes("`") ? (
-                            part
-                              .split(/`([^`]+)`/g)
-                              .map((p, k) =>
-                                k % 2 === 1 ? (
-                                  <code
-                                    key={k}
-                                    className="bg-ide-bg text-ide-syntax-string px-1 rounded text-[11px]"
-                                  >
-                                    {p}
-                                  </code>
-                                ) : (
-                                  p
-                                ),
-                              )
-                          ) : (
-                            part
-                          ),
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {msg.codeBlock && (
-                <div className="w-full bg-ide-bg rounded border border-ide-border overflow-hidden">
-                  <div className="flex items-center justify-between px-2 py-1 bg-ide-tab-bg border-b border-ide-border">
-                    <span
-                      className="text-ide-text-muted text-[10px]"
-                    >
-                      verilog
-                    </span>
-                    <button
-                      className="text-ide-text-muted hover:text-ide-text transition-colors text-[10px]"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <pre
-                    className="px-3 py-2 text-ide-info overflow-x-auto text-[11px] font-mono"
-                  >
-                    <code>{msg.codeBlock}</code>
-                  </pre>
-                </div>
-              )}
-
-              <span
-                className="text-ide-text-dim text-[10px]"
-              >
-                {msg.timestamp}
-              </span>
-            </div>
-          </div>
-        ))}
-
-        {isTyping && (
-          <div className="flex gap-2">
-            <div className="w-6 h-6 rounded-full bg-ide-syntax-keyword flex items-center justify-center shrink-0">
-              <Bot size={13} className="text-white" />
-            </div>
-            <div className="flex items-center gap-1 px-3 py-2 bg-ide-tab-bg rounded-lg">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-1.5 h-1.5 bg-ide-text-muted rounded-full animate-bounce"
-                  style={{ animationDelay: `${i * 0.15}s` }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
+      <MessageThread messages={messages} isTyping={isTyping} bottomRef={bottomRef} />
 
       {/* ── Copilot-style Input Box ── */}
       <div className="px-2 pb-2 pt-1.5 border-t border-ide-border shrink-0">
@@ -389,7 +161,10 @@ export function AIAssistantPanel() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSend();
+                sendMessage();
+                if (textareaRef.current) {
+                  textareaRef.current.style.height = 'auto';
+                }
               }
             }}
             placeholder="Ask a question about your RTL code… (Shift+Enter for new line)"
@@ -424,7 +199,7 @@ export function AIAssistantPanel() {
                       Add context
                     </span>
                   </div>
-                  {attachOptions.map(
+                  {ATTACH_OPTIONS.map(
                     ({ icon: Icon, label, desc }) => (
                       <button
                         key={label}
@@ -472,7 +247,7 @@ export function AIAssistantPanel() {
                   className="text-[10px] font-[500]"
                 >
                   {
-                    agents.find((a) => a.id === selectedAgent)
+                    AGENT_OPTIONS.find((a) => a.id === selectedAgent)
                       ?.label
                   }
                 </span>
@@ -490,7 +265,7 @@ export function AIAssistantPanel() {
                       Mode
                     </span>
                   </div>
-                  {agents.map((a) => (
+                  {AGENT_OPTIONS.map((a) => (
                     <button
                       key={a.id}
                       className="w-full flex items-center gap-2 px-2.5 py-2 hover:bg-ide-chat-hover transition-colors text-left"
@@ -565,7 +340,7 @@ export function AIAssistantPanel() {
                       Model
                     </span>
                   </div>
-                  {models.map((m) => (
+                  {MODEL_OPTIONS.map((m) => (
                     <button
                       key={m.id}
                       className="w-full flex items-center gap-2 px-2.5 py-2 hover:bg-ide-chat-hover transition-colors text-left"
@@ -638,7 +413,12 @@ export function AIAssistantPanel() {
 
             {/* Send button */}
             <button
-              onClick={handleSend}
+              onClick={() => {
+                sendMessage();
+                if (textareaRef.current) {
+                  textareaRef.current.style.height = 'auto';
+                }
+              }}
               disabled={!input.trim()}
               className={`flex items-center justify-center w-6 h-6 rounded transition-all ${
                 input.trim()
@@ -666,7 +446,7 @@ export function AIAssistantPanel() {
               {selectedAgent}
             </span>{" "}
             ·{" "}
-            <span style={{ color: agentColors[selectedAgent] }}>
+            <span style={{ color: AGENT_COLORS[selectedAgent] }}>
               {selectedModel}
             </span>
           </span>

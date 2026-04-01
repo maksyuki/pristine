@@ -2,7 +2,7 @@ import {
   GitBranch, AlertCircle, AlertTriangle, Bell, CheckCircle2,
   Zap,
 } from 'lucide-react';
-import { problemsList } from '../../data/mockData';
+import { useProblemsList } from '../../data/mockDataLoader';
 import { getEditorLanguageLabel } from '../workspace/workspaceFiles';
 
 interface StatusBarProps {
@@ -12,6 +12,7 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ activeFileId, cursorLine, cursorCol }: StatusBarProps) {
+  const problemsList = useProblemsList();
   const errorCount = problemsList.filter((p) => p.severity === 'error').length;
   const warnCount = problemsList.filter((p) => p.severity === 'warning').length;
   const lang = activeFileId ? getEditorLanguageLabel(activeFileId) : 'Plain Text';

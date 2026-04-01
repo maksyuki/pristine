@@ -97,7 +97,7 @@ describe('TerminalPanel', () => {
     expect(terminalConstructorOptions[0]?.theme).toEqual(createTerminalTheme(null));
 
     onDataCallback?.({ id: 'term-1', data: 'PS> dir\r\n' });
-    expect(terminalInstances[0]?.write).toHaveBeenCalledWith('PS> dir\r\n');
+    await waitFor(() => expect(terminalInstances[0]?.write).toHaveBeenCalledWith('PS> dir\r\n'));
   });
 
   it('forwards terminal input to the backend session', async () => {

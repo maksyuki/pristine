@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import Editor, { useMonaco } from '@monaco-editor/react';
+import { Suspense, lazy, useEffect } from 'react';
 import {
   X, ChevronRight, Split,
   MoreHorizontal, Circle,
 } from 'lucide-react';
-import { problemsList } from '../../data/mockData';
-import { getEditorLanguage, getWorkspaceSegments } from '../workspace/workspaceFiles';
-import { IDE_MONO_FONT_FAMILY } from '../editor/appearance';
-import { defineDraculaTheme } from '../editor/draculaTheme';
-import { useRegisterEditorLanguages } from '../editor/registerLanguages';
+import { getWorkspaceSegments } from '../workspace/workspaceFiles';
 import { FileTypeBadge } from './FileTypeBadge';
+import { useEditorDocumentState } from './useEditorDocumentState';
 import type { SplitDirection } from '../editor/editorLayout';
+
+const MonacoEditorPane = lazy(() => import('./MonacoEditorPane').then((module) => ({ default: module.MonacoEditorPane })));
 
 interface Tab {
   id: string;
@@ -132,107 +130,15 @@ export function EditorArea({
   showDragInteractionShield,
   dragInteractionShieldTestId,
 }: EditorAreaProps) {
-  const monaco = useMonaco();
-  useRegisterEditorLanguages(monaco);
-  const [localContentCache, setLocalContentCache] = useState<Record<string, string>>({});
-  const [localLoadingFiles, setLocalLoadingFiles] = useState<Record<string, boolean>>({});
-  const [localLoadErrors, setLocalLoadErrors] = useState<Record<string, string>>({});
-  const inFlightLoadsRef = useRef<Set<string>>(new Set());
-  const isMountedRef = useRef(true);
-  const resolvedContentCache = contentCache ?? localContentCache;
-  const resolvedLoadingFiles = loadingFiles ?? localLoadingFiles;
-  const resolvedLoadErrors = loadErrors ?? localLoadErrors;
-
-  const activeTab = tabs.find((t) => t.id === activeTabId);
-  const code = activeTabId
-    ? resolvedLoadErrors[activeTabId]
-      ? `// Failed to load ${activeTab?.name ?? activeTabId}\n// ${resolvedLoadErrors[activeTabId]}\n`
-      : resolvedLoadingFiles[activeTabId]
-      ? `// ${activeTab?.name ?? activeTabId}\n// Loading file contents...\n`
-      : resolvedContentCache[activeTabId] ?? `// ${activeTab?.name ?? activeTabId}\n// Loading file contents...\n`
-    : '';
-
-  useEffect(() => () => {
-    isMountedRef.current = false;
-  }, []);
-
-  useEffect(() => {
-    if (!activeTabId || resolvedContentCache[activeTabId] || inFlightLoadsRef.current.has(activeTabId)) {
-      return;
-    }
-
-    if (onLoadFile) {
-      onLoadFile(activeTabId);
-      return;
-    }
-
-    const fsApi = window.electronAPI?.fs;
-    if (!fsApi) {
-      setLocalLoadErrors((current) => ({ ...current, [activeTabId]: 'Filesystem API unavailable' }));
-      return;
-    }
-
-    inFlightLoadsRef.current.add(activeTabId);
-    setLocalLoadingFiles((current) => ({ ...current, [activeTabId]: true }));
-    void fsApi.readFile(activeTabId, 'utf-8')
-      .then((content) => {
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        setLocalContentCache((current) => ({ ...current, [activeTabId]: content }));
-        setLocalLoadErrors((current) => {
-          if (!current[activeTabId]) {
-            return current;
-          }
-
-          const next = { ...current };
-          delete next[activeTabId];
-          return next;
-        });
-      })
-      .catch((error: unknown) => {
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        const message = error instanceof Error ? error.message : 'Unable to load file';
-        setLocalLoadErrors((current) => ({ ...current, [activeTabId]: message }));
-      })
-      .finally(() => {
-        inFlightLoadsRef.current.delete(activeTabId);
-
-        if (!isMountedRef.current) {
-          return;
-        }
-
-        setLocalLoadingFiles((current) => ({ ...current, [activeTabId]: false }));
-      });
-  }, [activeTabId, onLoadFile, resolvedContentCache]);
-
-  // Build markers from problems
-  useEffect(() => {
-    if (!monaco) return;
-    const models = monaco.editor.getModels();
-    models.forEach((m: any) => {
-      const issues = problemsList.filter((p) => p.fileId === activeTabId);
-      const markers = issues.map((p) => ({
-        severity: p.severity === 'error'
-          ? monaco.MarkerSeverity.Error
-          : p.severity === 'warning'
-          ? monaco.MarkerSeverity.Warning
-          : monaco.MarkerSeverity.Info,
-        startLineNumber: p.line,
-        startColumn: p.column,
-        endLineNumber: p.line,
-        endColumn: p.column + 30,
-        message: p.message,
-        code: p.code,
-        source: p.source,
-      }));
-      monaco.editor.setModelMarkers(m, 'rtl-lint', markers);
-    });
-  }, [monaco, activeTabId]);
+  const { activeTab, code, updateContent } = useEditorDocumentState({
+    tabs,
+    activeTabId,
+    contentCache,
+    loadingFiles,
+    loadErrors,
+    onLoadFile,
+    onContentChange,
+  });
 
   // Jump to line
   useEffect(() => {
@@ -310,74 +216,24 @@ export function EditorArea({
       {/* Breadcrumb */}
       {activeTab && <Breadcrumb filePath={activeTabId} />}
 
-      {/* Monaco Editor */}
-      <div className="relative flex-1 overflow-hidden bg-ide-editor-bg">
-        {showDragInteractionShield && (
-          <div
-            data-testid={dragInteractionShieldTestId}
-            className="absolute inset-0 z-10 cursor-grabbing bg-transparent"
-            aria-hidden="true"
-          />
+      <Suspense
+        fallback={(
+          <div className="flex flex-1 items-center justify-center bg-ide-editor-bg text-ide-text-muted text-[12px]">
+            Loading editor...
+          </div>
         )}
-        <Editor
-          height="100%"
-          language={getEditorLanguage(activeTabId)}
-          value={code}
-          theme="dracula"
-          beforeMount={(monaco) => {
-            defineDraculaTheme(monaco);
-          }}
-          onMount={(editor) => {
-            editorRef.current = editor;
-            onEditorMount?.(editor);
-            editor.onDidChangeCursorPosition((e: any) => {
-              onCursorChange?.(e.position.lineNumber, e.position.column);
-            });
-          }}
-          onChange={(value) => {
-            if (!activeTabId) {
-              return;
-            }
-
-            if (onContentChange) {
-              onContentChange(activeTabId, value ?? '');
-              return;
-            }
-
-            setLocalContentCache((current) => ({ ...current, [activeTabId]: value ?? '' }));
-          }}
-          options={{
-            fontSize: 13,
-            fontFamily: IDE_MONO_FONT_FAMILY,
-            fontLigatures: true,
-            lineNumbers: 'on',
-            lineNumbersMinChars: 4,
-            glyphMargin: true,
-            folding: true,
-            foldingStrategy: 'indentation',
-            minimap: { enabled: true, scale: 1, showSlider: 'mouseover' },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: 4,
-            insertSpaces: true,
-            wordWrap: 'off',
-            rulers: [80, 120],
-            renderWhitespace: 'selection',
-            bracketPairColorization: { enabled: true },
-            guides: { bracketPairs: true, indentation: true },
-            suggest: { showKeywords: true, showSnippets: true },
-            quickSuggestions: { other: true, comments: false, strings: false },
-            parameterHints: { enabled: true },
-            cursorBlinking: 'smooth',
-            smoothScrolling: true,
-            scrollbar: {
-              verticalScrollbarSize: 8,
-              horizontalScrollbarSize: 8,
-            },
-            padding: { top: 8 },
-          }}
+      >
+        <MonacoEditorPane
+          activeTabId={activeTabId}
+          code={code}
+          editorRef={editorRef}
+          onCursorChange={onCursorChange}
+          onContentChange={updateContent}
+          onEditorMount={onEditorMount}
+          showDragInteractionShield={showDragInteractionShield}
+          dragInteractionShieldTestId={dragInteractionShieldTestId}
         />
-      </div>
+      </Suspense>
     </div>
   );
 }

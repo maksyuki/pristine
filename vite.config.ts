@@ -15,6 +15,25 @@ export default defineConfig(() => ({
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
+              output: {
+                manualChunks(id) {
+                  if (id.includes('@monaco-editor/react') || id.includes('monaco-editor')) {
+                    return 'monaco'
+                  }
+
+                  if (id.includes('@xterm')) {
+                    return 'xterm'
+                  }
+
+                  if (id.includes('react-konva') || id.includes('konva')) {
+                    return 'whiteboard'
+                  }
+
+                  if (id.includes('lucide-react')) {
+                    return 'icons'
+                  }
+                },
+              },
               external: ['node-pty'],
             },
           },

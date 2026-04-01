@@ -3,13 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { mockExposeInMainWorld, mockSendSync, mockInvoke, mockOn, mockRemoveListener } = vi.hoisted(() => ({
   mockExposeInMainWorld: vi.fn(),
   mockSendSync: vi.fn((channel: string, ...args: unknown[]) => {
-    if (channel === 'sync:platform') {
-      return {
-        platform: 'win32',
-        arch: 'x64',
-        versions: { electron: '33.0.0', node: '20.0.0', chrome: '130.0.0.0' },
-      };
-    }
     if (channel === 'sync:window:is-maximized') {
       return true;
     }
@@ -52,10 +45,10 @@ describe('preload bridge', () => {
     expect(mockExposeInMainWorld).toHaveBeenCalledTimes(1);
     const [, api] = mockExposeInMainWorld.mock.calls[0];
 
-    expect(mockSendSync).toHaveBeenCalledWith('sync:platform');
-    expect(api.platform).toBe('win32');
-    expect(api.arch).toBe('x64');
-    expect(api.versions.electron).toBe('33.0.0');
+    expect(mockSendSync).not.toHaveBeenCalledWith('sync:platform');
+    expect(api.platform).toBe(process.platform);
+    expect(api.arch).toBe(process.arch);
+    expect(api.versions.electron).toBe(process.versions.electron);
     expect(api.isMaximized()).toBe(true);
     expect(api.config.get('theme')).toBe('dracula');
   });

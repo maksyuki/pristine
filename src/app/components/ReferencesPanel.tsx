@@ -2,7 +2,7 @@ import {
   ExternalLink,
   FileCode2,
 } from "lucide-react";
-import { references } from "../../data/mockData";
+import { useReferences } from '../../data/mockDataLoader';
 
 const typeColors: Record<string, string> = {
   definition: "var(--ide-syntax-type, #4ec9b0)",
@@ -24,6 +24,8 @@ export function ReferencesPanel({
   onFileOpen,
   onLineJump,
 }: ReferencesPanelProps) {
+  const references = useReferences();
+
   return (
     <div className="flex flex-col h-full">
       <div className="px-3 py-2 border-b border-ide-border shrink-0">

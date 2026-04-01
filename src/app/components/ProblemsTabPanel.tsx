@@ -1,7 +1,8 @@
 import { AlertCircle, AlertTriangle, Info } from 'lucide-react';
-import { problemsList } from '../../data/mockData';
+import { useProblemsList } from '../../data/mockDataLoader';
 
 export function ProblemsTabPanel() {
+  const problemsList = useProblemsList();
   const errors = problemsList.filter((p) => p.severity === 'error');
   const warnings = problemsList.filter((p) => p.severity === 'warning');
   const infos = problemsList.filter((p) => p.severity === 'info');

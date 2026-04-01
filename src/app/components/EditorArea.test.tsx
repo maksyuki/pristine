@@ -150,7 +150,7 @@ describe('EditorArea', () => {
     });
 
     expect(screen.getByTestId('editor-tab-badge-startup/crt0.S')).toHaveTextContent('AS');
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'assembly');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'assembly');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'assembly', extensions: ['.s', '.S'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('assembly', expect.any(Object));
     expect(mockMonaco.languages.registerCompletionItemProvider).toHaveBeenCalledWith('assembly', expect.any(Object));
@@ -170,7 +170,7 @@ describe('EditorArea', () => {
     await waitFor(() => {
       expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('scripts/deploy.sh', 'utf-8');
     });
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'shell');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'shell');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'shell', extensions: ['.sh'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('shell', expect.any(Object));
 
@@ -187,7 +187,7 @@ describe('EditorArea', () => {
     await waitFor(() => {
       expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('scripts/build.tcl', 'utf-8');
     });
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'tcl');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'tcl');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'tcl', extensions: ['.tcl'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('tcl', expect.any(Object));
 
@@ -204,7 +204,7 @@ describe('EditorArea', () => {
     await waitFor(() => {
       expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('linker/memory.lds', 'utf-8');
     });
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'linker-script');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'linker-script');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'linker-script', extensions: ['.ld', '.lds'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('linker-script', expect.any(Object));
 
@@ -221,7 +221,7 @@ describe('EditorArea', () => {
     await waitFor(() => {
       expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('sim/sources.fl', 'utf-8');
     });
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'filelist');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'filelist');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'filelist', extensions: ['.f', '.fl'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('filelist', expect.any(Object));
 
@@ -238,7 +238,7 @@ describe('EditorArea', () => {
     await waitFor(() => {
       expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('constraints/top.xdc', 'utf-8');
     });
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'constraints');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'constraints');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'constraints', extensions: ['.xdc', '.sdc'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('constraints', expect.any(Object));
   });
@@ -258,7 +258,7 @@ describe('EditorArea', () => {
       expect(window.electronAPI!.fs.readFile).toHaveBeenCalledWith('build/Makefile', 'utf-8');
     });
     expect(screen.getByTestId('editor-tab-badge-build/Makefile')).toHaveTextContent('MK');
-    expect(screen.getByTestId('monaco-editor')).toHaveAttribute('data-language', 'makefile');
+    expect(await screen.findByTestId('monaco-editor')).toHaveAttribute('data-language', 'makefile');
     expect(mockMonaco.languages.register).toHaveBeenCalledWith({ id: 'makefile', extensions: ['.mk'], filenames: ['Makefile'] });
     expect(mockMonaco.languages.setMonarchTokensProvider).toHaveBeenCalledWith('makefile', expect.any(Object));
     expect(mockMonaco.languages.registerCompletionItemProvider).toHaveBeenCalledWith('makefile', expect.any(Object));

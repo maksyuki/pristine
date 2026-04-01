@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Search, Trash2 } from 'lucide-react';
-import { outputLog } from '../../data/mockData';
+import { useOutputLog } from '../../data/mockDataLoader';
 
 const levelConfig = {
   info: { color: '#9cdcfe', label: 'INFO' },
@@ -9,14 +9,15 @@ const levelConfig = {
 };
 
 export function OutputPanel() {
+  const outputLog = useOutputLog();
   const [filterText, setFilterText] = useState('');
   const [levelFilter, setLevelFilter] = useState<'all' | 'info' | 'warn' | 'error'>('all');
 
-  const filtered = outputLog.filter((entry) => {
+  const filtered = useMemo(() => outputLog.filter((entry) => {
     const matchLevel = levelFilter === 'all' || entry.level === levelFilter;
     const matchText = !filterText || entry.text.toLowerCase().includes(filterText.toLowerCase());
     return matchLevel && matchText;
-  });
+  }), [filterText, levelFilter, outputLog]);
 
   return (
     <div className="flex flex-col h-full">

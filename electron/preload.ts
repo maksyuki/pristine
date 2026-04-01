@@ -7,14 +7,18 @@ function syncSend<T>(channel: string, ...args: unknown[]): T {
   return ipcRenderer.sendSync(channel, ...args) as T;
 }
 
-// ─── Platform Info (cached at load time) ──────────────────────────────────────
+// ─── Platform Info (local preload process data) ───────────────────────────────
 
-const platformInfo = syncSend<{
-  platform: string;
-  arch: string;
-  isE2E: boolean;
-  versions: { electron: string; node: string; chrome: string };
-}>(SyncChannels.PLATFORM);
+const platformInfo = {
+  platform: process.platform,
+  arch: process.arch,
+  isE2E: process.env['PRISTINE_E2E'] === '1',
+  versions: {
+    electron: process.versions['electron'],
+    node: process.versions['node'],
+    chrome: process.versions['chrome'],
+  },
+};
 
 // ─── Exposed API ──────────────────────────────────────────────────────────────
 

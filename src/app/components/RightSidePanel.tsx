@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { AIAssistantPanel } from "./AIAssistantPanel";
-import { StaticCheckPanel } from "./StaticCheckPanel";
-import { ReferencesPanel } from "./ReferencesPanel";
+import { Suspense, lazy, useState } from "react";
+
+const AIAssistantPanel = lazy(() => import('./AIAssistantPanel').then((module) => ({ default: module.AIAssistantPanel })));
+const StaticCheckPanel = lazy(() => import('./StaticCheckPanel').then((module) => ({ default: module.StaticCheckPanel })));
+const ReferencesPanel = lazy(() => import('./ReferencesPanel').then((module) => ({ default: module.ReferencesPanel })));
 
 interface RightSidePanelProps {
   onFileOpen: (fileId: string, fileName: string) => void;
@@ -46,18 +47,26 @@ export function RightSidePanel({
       </div>
 
       <div className="flex-1 overflow-hidden">
-        {tab === "ai" && <AIAssistantPanel />}
+        {tab === "ai" && (
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-ide-text-muted text-[12px]">Loading assistant...</div>}>
+            <AIAssistantPanel />
+          </Suspense>
+        )}
         {tab === "static" && (
-          <StaticCheckPanel
-            onFileOpen={onFileOpen}
-            onLineJump={onLineJump}
-          />
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-ide-text-muted text-[12px]">Loading checks...</div>}>
+            <StaticCheckPanel
+              onFileOpen={onFileOpen}
+              onLineJump={onLineJump}
+            />
+          </Suspense>
         )}
         {tab === "references" && (
-          <ReferencesPanel
-            onFileOpen={onFileOpen}
-            onLineJump={onLineJump}
-          />
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-ide-text-muted text-[12px]">Loading references...</div>}>
+            <ReferencesPanel
+              onFileOpen={onFileOpen}
+              onLineJump={onLineJump}
+            />
+          </Suspense>
         )}
       </div>
     </div>

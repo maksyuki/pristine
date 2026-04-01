@@ -24,7 +24,7 @@ describe('LeftSidePanel', () => {
     });
   });
 
-  it('opens a file and jumps to the selected problem line', () => {
+  it('opens a file and jumps to the selected problem line', async () => {
     const onFileOpen = vi.fn();
     const onLineJump = vi.fn();
 
@@ -38,7 +38,7 @@ describe('LeftSidePanel', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /problems/i }));
-    fireEvent.click(screen.getByText(/Port 'alu_src_b' of module 'ctrl_unit' not connected/i));
+  fireEvent.click(await screen.findByText(/Port 'alu_src_b' of module 'ctrl_unit' not connected/i));
 
     expect(onFileOpen).toHaveBeenCalledWith('cpu_top', 'cpu_top.v');
     expect(onLineJump).toHaveBeenCalledWith(56);

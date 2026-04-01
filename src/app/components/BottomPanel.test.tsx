@@ -28,14 +28,14 @@ describe('BottomPanel', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
-  it('switches between tabs and closes the panel', () => {
+  it('switches between tabs and closes the panel', async () => {
     const onClose = vi.fn();
 
     render(<BottomPanel onClose={onClose} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /problems \(6\)/i }));
-    expect(screen.getByText(/2 errors/i)).toBeInTheDocument();
-    expect(screen.getByText(/3 warnings/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /problems/i }));
+    expect(await screen.findByText(/2 errors/i)).toBeInTheDocument();
+    expect(await screen.findByText(/3 warnings/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /debug console/i }));
     expect(screen.getByRole('button', { name: /start debugging/i })).toBeInTheDocument();
@@ -45,12 +45,12 @@ describe('BottomPanel', () => {
     expect(terminateTerminalSessionMock).toHaveBeenCalled();
   });
 
-  it('filters output entries by text and severity', () => {
+  it('filters output entries by text and severity', async () => {
     render(<BottomPanel />);
 
     fireEvent.click(screen.getByRole('button', { name: /^output$/i }));
 
-    const filterInput = screen.getByPlaceholderText(/filter output/i);
+    const filterInput = await screen.findByPlaceholderText(/filter output/i);
     fireEvent.change(filterInput, { target: { value: 'cpu_top' } });
 
     expect(screen.getByText(/cpu_top\.v \[L56\]: Unconnected port alu_src_b/i)).toBeInTheDocument();

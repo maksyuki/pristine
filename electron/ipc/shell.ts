@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron';
-import { spawn, type ChildProcess } from 'node:child_process';
+import * as childProcess from 'node:child_process';
+import type { ChildProcess } from 'node:child_process';
 import { AsyncChannels, StreamChannels } from './channels.js';
 import { assertString, validatePathWithinRoot } from './validators.js';
 
@@ -58,7 +59,7 @@ export function registerShellHandlers(getMainWindow: () => BrowserWindow | null)
       }
 
       const id = String(nextId++);
-      const child = spawn(command, argList, {
+      const child = childProcess.spawn(command, argList, {
         cwd,
         shell: false,
         stdio: ['ignore', 'pipe', 'pipe'],

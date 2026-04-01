@@ -12,13 +12,25 @@ export default defineConfig({
   },
   test: {
     setupFiles: ['./src/test/setup.ts'],
-    environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}', 'electron/**/*.test.ts'],
     fileParallelism: !isCiCoverageRun,
     maxWorkers: isCiCoverageRun ? 1 : undefined,
-    minWorkers: isCiCoverageRun ? 1 : undefined,
-    environmentMatchGlobs: [
-      ['electron/**', 'node'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'renderer',
+          environment: 'jsdom',
+          include: ['src/**/*.test.{ts,tsx}'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'electron',
+          environment: 'node',
+          include: ['electron/**/*.test.ts'],
+        },
+      },
     ],
     coverage: {
       provider: 'v8',

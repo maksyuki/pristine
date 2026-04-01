@@ -2,14 +2,14 @@ import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import electron from 'vite-plugin-electron/simple'
+import electron from 'vite-plugin-electron'
 
-export default defineConfig(async () => ({
+export default defineConfig(() => ({
   plugins: [
     react(),
     tailwindcss(),
-    ...(await electron({
-      main: {
+    ...electron([
+      {
         entry: 'electron/main.ts',
         vite: {
           build: {
@@ -20,16 +20,32 @@ export default defineConfig(async () => ({
           },
         },
       },
-      preload: {
-        input: 'electron/preload.ts',
+      {
+        onstart(args) {
+          args.reload()
+        },
         vite: {
           build: {
             outDir: 'dist-electron',
+            lib: {
+              entry: 'electron/preload.ts',
+              formats: ['cjs'],
+              fileName: () => 'preload.mjs',
+            },
+            rollupOptions: {
+              output: {
+                assetFileNames: '[name].[ext]',
+              },
+            },
+            rolldownOptions: {
+              output: {
+                codeSplitting: false,
+              },
+            },
           },
         },
       },
-      renderer: {},
-    })),
+    ]),
   ],
   resolve: {
     alias: {

@@ -10,9 +10,14 @@ vi.mock('electron', () => ({
 }));
 
 const mockSpawn = vi.fn();
-vi.mock('node:child_process', () => ({
-  spawn: (...args: unknown[]) => mockSpawn(...args),
-}));
+vi.mock('node:child_process', () => {
+  const spawn = (...args: unknown[]) => mockSpawn(...args);
+
+  return {
+    default: { spawn },
+    spawn,
+  };
+});
 
 import { registerShellHandlers, setShellProjectRoot } from '../shell.js';
 

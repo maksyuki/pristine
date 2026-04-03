@@ -8,7 +8,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 const menus = [
   {
     label: 'File',
-    items: ['New File', 'New Folder', '---', 'Open Project...', 'Recent', '---', 'Save', 'Save All', '---', 'Close Editor', 'Exit'],
+    items: ['New Project', 'Open Project...', '---', 'Save', 'Save As...', '---', 'Setting...', 'Close'],
   },
   {
     label: 'Edit',
@@ -23,20 +23,16 @@ const menus = [
     items: ['Command Palette', '---', 'Explorer', 'AI Assistant', '---', 'Terminal', 'Output', 'Problems', '---', 'Split Editor'],
   },
   {
-    label: 'Go',
-    items: ['Go to File...', 'Go to Symbol...', 'Go to Definition', 'Find All References', '---', 'Go to Line/Column...'],
-  },
-  {
     label: 'Run',
     items: ['Start Simulation', 'Debug Simulation', '---', 'Static Check', 'Synthesis', 'Place & Route', '---', 'Stop'],
   },
   {
     label: 'Terminal',
-    items: ['New Terminal', 'Split Terminal', '---', 'Run Task...', 'Verilator', 'VCS', 'Synopsys DC'],
+    items: ['New Terminal', 'Split Terminal', '---', 'Run Task...'],
   },
   {
     label: 'Help',
-    items: ['Documentation', 'Keyboard Shortcuts', '---', 'RTL Syntax Reference', 'SystemVerilog LRM', '---', 'About'],
+    items: ['Documentation', 'Check for Update...', '---', 'About'],
   },
 ];
 

@@ -1,120 +1,95 @@
-import React, { useCallback } from 'react';
-import { useVisualEditor } from './useVisualEditor';
-import { TopBar } from './TopBar';
-import { BottomBar } from './BottomBar';
-import { LayerPanel } from './LayerPanel';
-import { MiniMap } from './MiniMap';
-import { HistoryPanel } from './HistoryPanel';
-import { ShapeInPagePanel } from './ShapeInPagePanel';
+import { useState } from 'react';
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 
-export const WhiteboardView: React.FC = () => {
-  const ve = useVisualEditor();
 
-  // ─── TopBar handlers ─────────────────────────────────────────────────
-  const handleTopBarLeftBtnClick = useCallback((tooltip: string) => {
-    if (tooltip === 'home') {
-      ve.setIsTopBarLeftHomeBtnClick((v) => !v);
-    }
-  }, [ve.setIsTopBarLeftHomeBtnClick]);
+const proOptions = { hideAttribution: true };
 
-  const handleTopBarHomeBtnClick = useCallback((name: string) => {
-    switch (name) {
-      case 'open': {
-        // clear canvas layers
-        break;
-      }
-      case 'export':
-        ve.exportCanvas();
-        break;
-      default:
-        break;
-    }
-    ve.setIsTopBarLeftHomeBtnClick(false);
-  }, [ve.exportCanvas, ve.setIsTopBarLeftHomeBtnClick]);
+export function WhiteboardView() {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, , onEdgesChange] = useEdgesState([]);
+  const [lastDraggedNodePosition, setLastDraggedNodePosition] = useState('none');
 
-  const handleCodeFreezeToggle = useCallback(() => {
-    ve.setVeIsCodeFreeze((v) => !v);
-  }, [ve.setVeIsCodeFreeze]);
+  const createNode = () => {
+    const nextNodeIndex = nodes.length + 1;
+    const nextNodeId = `node-${nextNodeIndex}`;
 
-  // ─── Cursor class mapping ──────────────────────────────────────────
-  let cursorClass = 'cursor-auto';
-  if (ve.veIsGrabbing) cursorClass = 'cursor-grabbing';
-  else if (ve.veSelectedBtn === 'grab') cursorClass = 'cursor-grab';
-  else if (ve.veSelectedBtn === 'text') cursorClass = 'cursor-text';
-  else if (ve.veSelectedBtn === 'shape') cursorClass = 'cursor-crosshair';
+    setNodes((currentNodes) => [
+      ...currentNodes,
+      {
+        id: nextNodeId,
+        position: {
+          x: 96 + ((nextNodeIndex - 1) % 3) * 180,
+          y: 96 + Math.floor((nextNodeIndex - 1) / 3) * 120,
+        },
+        data: { label: `Node ${nextNodeIndex}` },
+        style: {
+          borderRadius: 14,
+          border: '1px solid rgba(148, 163, 184, 0.45)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          color: '#0f172a',
+          boxShadow: '0 18px 50px rgba(37, 99, 235, 0.08)',
+          padding: '10px 14px',
+          minWidth: 128,
+          fontSize: 12,
+          fontWeight: 600,
+        },
+      },
+    ]);
+  };
 
   return (
-    <div className={`w-full h-full flex justify-center items-center overflow-hidden relative ${ve.wbTheme === 'dark' ? 'wb-theme-dark' : 'wb-theme-light'}`} ref={ve.canvasContainerRef}>
-      {/* Konva stage mount point */}
-      <div id="konva-veStage" className={`w-full h-full overflow-hidden bg-[var(--wb-canvas-bg)] ${cursorClass}`} />
-
-      <TopBar
-        isTopBarLeftHomeBtnClick={ve.isTopBarLeftHomeBtnClick}
-        veIsCodeFreeze={ve.veIsCodeFreeze}
-        wbTheme={ve.wbTheme}
-        onTopBarLeftBtnClick={handleTopBarLeftBtnClick}
-        onTopBarHomeBtnClick={handleTopBarHomeBtnClick}
-        onCodeFreezeToggle={handleCodeFreezeToggle}
-        onToggleTheme={ve.toggleWbTheme}
-      />
-
-      <BottomBar
-        veSelectedBtn={ve.veSelectedBtn}
-        vePicPreviewDataList={ve.vePicPreviewDataList}
-        vePicUploadBtnIdx={ve.vePicUploadBtnIdx}
-        selectedPenSubBarFirst={ve.selectedPenSubBarFirst}
-        selectedPenSubBarSecond={ve.selectedPenSubBarSecond}
-        selectedPenSubBarThird={ve.selectedPenSubBarThird}
-        selectedPenSubBarFourth={ve.selectedPenSubBarFourth}
-        selectedEraserSubBarFirst={ve.selectedEraserSubBarFirst}
-        selectedShapeSubBarFirst={ve.selectedShapeSubBarFirst}
-        onBottomBarLeftBtnClick={ve.handleBottomBarLeftBtnClick}
-        onSetVeSelectedBtn={ve.setVeSelectedBtn}
-        onPicUploadBtnClick={ve.handlePicUploadBtnClick}
-        onSetSelectedPenSubBarFirst={ve.setSelectedPenSubBarFirst}
-        onSetSelectedPenSubBarSecond={ve.setSelectedPenSubBarSecond}
-        onSetSelectedPenSubBarThird={ve.setSelectedPenSubBarThird}
-        onSetSelectedPenSubBarFourth={ve.setSelectedPenSubBarFourth}
-        onSetSelectedEraserSubBarFirst={ve.setSelectedEraserSubBarFirst}
-        onSetSelectedShapeSubBarFirst={ve.setSelectedShapeSubBarFirst}
-        picUploadInputRef={ve.picUploadInputRef}
-        onImageFileUpload={ve.handleImageFileUpload}
-      />
-
-      <LayerPanel
-        veGridLayerControl={ve.veGridLayerControl}
-        veShapeLayerControl={ve.veShapeLayerControl}
-        veDesignLayerControl={ve.veDesignLayerControl}
-        veCommentLayerControl={ve.veCommentLayerControl}
-        onGridLayerHideClick={ve.handleGridLayerHideClick}
-        onShapeLayerHideClick={ve.handleShapeLayerHideClick}
-        onDesignLayerHideClick={ve.handleDesignLayerHideClick}
-        onCommentLayerHideClick={ve.handleCommentLayerHideClick}
-        onShapeLayerLockToggle={() => ve.setVeShapeLayerControl((c) => ({ ...c, isLock: !c.isLock }))}
-        onDesignLayerLockToggle={() => ve.setVeDesignLayerControl((c) => ({ ...c, isLock: !c.isLock }))}
-        onCommentLayerLockToggle={() => ve.setVeCommentLayerControl((c) => ({ ...c, isLock: !c.isLock }))}
-      />
-
-      <MiniMap
-        veConfig={ve.veConfig}
-        veStageState={ve.veStageState}
-        previewImgRef={ve.previewImgRef}
-        onZoom={ve.handleVEZoom}
-        onZoomReset={ve.handleVEZoomReset}
-      />
-
-      <HistoryPanel
-        className="hidden"
-        historyState={ve.historyState}
-        historyItemList={ve.historyItemList}
-        historyListPanelRef={ve.historyListPanelRef}
-        onHistoryItemClick={ve.handleHistoryItemClick}
-      />
-
-      <ShapeInPagePanel
-        veShapeInPagePanelState={ve.veShapeInPagePanelState}
-        veShapeInPagePanelTool={ve.veShapeInPagePanelTool}
-      />
+    <div data-testid="whiteboard-view" className="h-screen bg-[#f8fafc] text-slate-900">
+      <div className="absolute left-5 top-5 z-20 flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/88 px-4 py-3 shadow-[0_20px_45px_rgba(148,163,184,0.16)] backdrop-blur">
+        <button
+          type="button"
+          data-testid="whiteboard-add-node"
+          onClick={createNode}
+          className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-700"
+        >
+          Add node
+        </button>
+        <span data-testid="whiteboard-node-count" className="text-xs font-medium text-slate-600">
+          Nodes: {nodes.length}
+        </span>
+        <span data-testid="whiteboard-last-dragged-node" className="text-xs font-medium text-slate-500">
+          Last drag: {lastDraggedNodePosition}
+        </span>
+      </div>
+      <ReactFlow
+        data-testid="whiteboard-react-flow"
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeDragStop={(_event, node) => {
+          setLastDraggedNodePosition(`${node.id}:${Math.round(node.position.x)},${Math.round(node.position.y)}`);
+        }}
+        colorMode="light"
+        minZoom={0.25}
+        maxZoom={2}
+        fitView={false}
+        proOptions={proOptions}
+      >
+        <div data-testid="whiteboard-controls-wrapper">
+          <Controls />
+        </div>
+        <MiniMap data-testid="whiteboard-minimap" pannable zoomable />
+        <Background
+          data-testid="whiteboard-background"
+          // variant={BackgroundVariant.grid}
+          // gap={24}
+          // size={1}
+        />
+      </ReactFlow>
     </div>
   );
-};
+}

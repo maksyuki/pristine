@@ -25,10 +25,6 @@ export default defineConfig(() => ({
                     return 'xterm'
                   }
 
-                  if (id.includes('react-konva') || id.includes('konva')) {
-                    return 'whiteboard'
-                  }
-
                   if (id.includes('lucide-react')) {
                     return 'icons'
                   }

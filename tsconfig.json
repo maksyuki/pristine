@@ -22,5 +22,6 @@
     }
   },
   "include": ["src", "types"],
+  "exclude": ["src/app/components/whiteboard_bp"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

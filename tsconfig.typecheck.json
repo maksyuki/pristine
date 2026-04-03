@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "references": [],
-  "include": ["src", "types"]
+  "include": ["src", "types"],
+  "exclude": ["src/app/components/whiteboard_bp"]
 }

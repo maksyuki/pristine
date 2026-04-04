@@ -2,19 +2,15 @@ name: CI
 
 on:
   push:
+    branches:
+      - dev
+      - main
   pull_request:
 
 jobs:
   test:
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+    name: Test Suite
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -51,7 +47,6 @@ jobs:
           --coverage.thresholds.functions=0
 
       - name: Configure Electron sandbox on Linux
-        if: runner.os == 'Linux'
         run: |
           sandbox_path="$(readlink -f node_modules/electron/dist/chrome-sandbox)"
           sudo chown root:root "$sandbox_path"
@@ -59,32 +54,82 @@ jobs:
           echo "CHROME_DEVEL_SANDBOX=$sandbox_path" >> "$GITHUB_ENV"
 
       - name: Install Linux window manager for E2E
-        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y openbox
 
-      - name: Run E2E tests on Linux
-        if: runner.os == 'Linux'
+      - name: Run E2E tests
         run: |
           xvfb-run -a --server-args="-screen 0 1280x720x24" sh -c 'openbox >/tmp/openbox.log 2>&1 & pnpm test:e2e'
-
-      - name: Run E2E tests on Windows and macOS
-        if: runner.os != 'Linux'
-        run: pnpm test:e2e
 
       - name: Upload Playwright report
         if: failure() && hashFiles('playwright-report/**') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.os }}
+          name: playwright-report-test-suite
           path: playwright-report
           if-no-files-found: ignore
 
       - name: Upload coverage report
-        if: runner.os == 'Linux' && always() && hashFiles('coverage/**') != ''
+        if: always() && hashFiles('coverage/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage
           if-no-files-found: ignore
+
+  package:
+    name: Package ${{ matrix.id }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: ubuntu-22.04-x64
+            runner: ubuntu-22.04
+            package_script: package:linux:x64
+          - id: ubuntu-24.04-x64
+            runner: ubuntu-24.04
+            package_script: package:linux:x64
+          - id: windows-2022-x64
+            runner: windows-2022
+            package_script: package:win:x64
+          - id: macos-13-x64
+            runner: macos-13
+            package_script: package:mac:x64
+          - id: macos-14-arm64
+            runner: macos-14
+            package_script: package:mac:arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Package application
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: pnpm run ${{ matrix.package_script }}
+
+      - name: Upload package artifacts
+        if: always() && hashFiles('release/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: pristine-${{ matrix.id }}
+          path: release/**
+          if-no-files-found: error

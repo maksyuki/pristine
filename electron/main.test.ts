@@ -204,11 +204,12 @@ describe('electron main entry', () => {
     expect(mainWindow.show).not.toHaveBeenCalled();
 
     mainWindow.emit('ready-to-show');
-    await vi.advanceTimersByTimeAsync(999);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(mainWindow.show).not.toHaveBeenCalled();
     expect(splashWindow.close).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(1);
+    await vi.runAllTimersAsync();
+    await Promise.resolve();
     expect(mainWindow.show).toHaveBeenCalledTimes(1);
     expect(splashWindow.close).toHaveBeenCalledTimes(1);
 

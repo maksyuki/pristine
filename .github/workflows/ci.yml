@@ -52,21 +52,37 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - id: ubuntu-22.04-x64
-            runner: ubuntu-22.04
-            enable_coverage: false
-          - id: ubuntu-24.04-x64
-            runner: ubuntu-24.04
+          - &platform_ubuntu_2204_x64
+            id: &platform_id_ubuntu_2204_x64 ubuntu-22.04-x64
+            runner: &platform_runner_ubuntu_2204_x64 ubuntu-22.04
+          - &platform_ubuntu_2404_x64
+            id: &platform_id_ubuntu_2404_x64 ubuntu-24.04-x64
+            runner: &platform_runner_ubuntu_2404_x64 ubuntu-24.04
             enable_coverage: true
-          - id: windows-2022-x64
-            runner: windows-2022
-            enable_coverage: false
-          - id: macos-13-x64
-            runner: macos-13
-            enable_coverage: false
-          - id: macos-14-arm64
-            runner: macos-14
-            enable_coverage: false
+          - &platform_windows_2025_x64
+            id: &platform_id_windows_2025_x64 windows-2025-x64
+            runner: &platform_runner_windows_2025_x64 windows-2025
+          - &platform_windows_2022_x64
+            id: &platform_id_windows_2022_x64 windows-2022-x64
+            runner: &platform_runner_windows_2022_x64 windows-2022
+          - &platform_macos_26_arm64
+            id: &platform_id_macos_26_arm64 macos-26-arm64
+            runner: &platform_runner_macos_26_arm64 macos-26
+          - &platform_macos_26_x64
+            id: &platform_id_macos_26_x64 macos-26-x64
+            runner: &platform_runner_macos_26_x64 macos-26-intel
+          - &platform_macos_15_arm64
+            id: &platform_id_macos_15_arm64 macos-15-arm64
+            runner: &platform_runner_macos_15_arm64 macos-15
+          - &platform_macos_15_x64
+            id: &platform_id_macos_15_x64 macos-15-x64
+            runner: &platform_runner_macos_15_x64 macos-15-intel
+          - &platform_macos_14_arm64
+            id: &platform_id_macos_14_arm64 macos-14-arm64
+            runner: &platform_runner_macos_14_arm64 macos-14
+          - &platform_macos_14_x64
+            id: &platform_id_macos_14_x64 macos-14-x64
+            runner: &platform_runner_macos_14_x64 macos-14-intel
 
     steps:
       - name: Checkout
@@ -93,7 +109,7 @@ jobs:
         run: pnpm build
 
       - name: Run unit tests with coverage report
-        if: matrix.enable_coverage
+        if: matrix.enable_coverage == true
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         run: >-
@@ -104,7 +120,7 @@ jobs:
           --coverage.thresholds.functions=0
 
       - name: Run unit tests
-        if: ${{ !matrix.enable_coverage }}
+        if: matrix.enable_coverage != true
         run: pnpm test:unit
 
       - name: Configure Electron sandbox on Linux
@@ -139,7 +155,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload coverage report
-        if: always() && matrix.enable_coverage && hashFiles('coverage/**') != ''
+        if: always() && matrix.enable_coverage == true && hashFiles('coverage/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ matrix.id }}
@@ -157,20 +173,35 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - id: ubuntu-22.04-x64
-            runner: ubuntu-22.04
+          - id: *platform_id_ubuntu_2204_x64
+            runner: *platform_runner_ubuntu_2204_x64
             package_script: package:linux:x64
-          - id: ubuntu-24.04-x64
-            runner: ubuntu-24.04
+          - id: *platform_id_ubuntu_2404_x64
+            runner: *platform_runner_ubuntu_2404_x64
             package_script: package:linux:x64
-          - id: windows-2022-x64
-            runner: windows-2022
+          - id: *platform_id_windows_2025_x64
+            runner: *platform_runner_windows_2025_x64
             package_script: package:win:x64
-          - id: macos-13-x64
-            runner: macos-13
+          - id: *platform_id_windows_2022_x64
+            runner: *platform_runner_windows_2022_x64
+            package_script: package:win:x64
+          - id: *platform_id_macos_26_x64
+            runner: *platform_runner_macos_26_x64
             package_script: package:mac:x64
-          - id: macos-14-arm64
-            runner: macos-14
+          - id: *platform_id_macos_26_arm64
+            runner: *platform_runner_macos_26_arm64
+            package_script: package:mac:arm64
+          - id: *platform_id_macos_15_x64
+            runner: *platform_runner_macos_15_x64
+            package_script: package:mac:x64
+          - id: *platform_id_macos_15_arm64
+            runner: *platform_runner_macos_15_arm64
+            package_script: package:mac:arm64
+          - id: *platform_id_macos_14_x64
+            runner: *platform_runner_macos_14_x64
+            package_script: package:mac:x64
+          - id: *platform_id_macos_14_arm64
+            runner: *platform_runner_macos_14_arm64
             package_script: package:mac:arm64
 
     steps:

@@ -80,9 +80,6 @@ jobs:
           - &platform_macos_14_arm64
             id: &platform_id_macos_14_arm64 macos-14-arm64
             runner: &platform_runner_macos_14_arm64 macos-14
-          - &platform_macos_14_x64
-            id: &platform_id_macos_14_x64 macos-14-x64
-            runner: &platform_runner_macos_14_x64 macos-14-intel
 
     steps:
       - name: Checkout
@@ -197,9 +194,6 @@ jobs:
           - id: *platform_id_macos_15_arm64
             runner: *platform_runner_macos_15_arm64
             package_script: package:mac:arm64
-          - id: *platform_id_macos_14_x64
-            runner: *platform_runner_macos_14_x64
-            package_script: package:mac:x64
           - id: *platform_id_macos_14_arm64
             runner: *platform_runner_macos_14_arm64
             package_script: package:mac:arm64

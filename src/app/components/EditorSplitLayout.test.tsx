@@ -139,7 +139,7 @@ describe('EditorSplitLayout', () => {
     const indicator = screen.getByTestId('editor-drop-indicator-right');
     expect(indicator).toBeInTheDocument();
     expect(indicator).toHaveClass('w-px', 'transition-all', 'duration-150', 'ease-out');
-    expect(indicator).toHaveClass('right-1/2', 'translate-x-1/2', 'bg-ide-text-section/75');
+    expect(indicator).toHaveClass('right-1/2', 'translate-x-1/2', 'bg-muted-foreground/75');
 
     fireDragEvent(group, 'drop', 95, 50);
     fireEvent.dragEnd(draggedTab);
@@ -234,6 +234,6 @@ describe('EditorSplitLayout', () => {
     expect(halfPaneZone).not.toBeNull();
 
     const overlayLabel = screen.getByText('Split left');
-    expect(overlayLabel).toHaveClass('border-ide-border-light/70', 'bg-ide-sidebar-bg/95', 'text-ide-text-section');
+    expect(overlayLabel).toHaveClass('border-border/70', 'bg-popover/95', 'text-muted-foreground');
   });
 });

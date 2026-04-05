@@ -2,8 +2,21 @@ import { useState, useRef, useEffect } from 'react';
 import {
   PanelLeft, PanelBottom, Columns2,
   Settings, CircleUser, Minus, Square, X, Code2, Presentation, Workflow,
+  Sun, Moon,
 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useTheme } from '../context/ThemeContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
+import { Toggle } from './ui/toggle';
+import { Separator } from './ui/separator';
+import { Button } from './ui/button';
 
 const menus = [
   {
@@ -52,14 +65,6 @@ interface MenuBarProps {
   onToggleRightPanel?: () => void;
 }
 
-function getLayoutButtonClass(isActive: boolean) {
-  return `w-8 h-full flex items-center justify-center transition-colors ${
-    isActive
-      ? 'text-ide-text bg-ide-btn-hover'
-      : 'text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover'
-  }`;
-}
-
 export function MenuBar({
   showLeftPanel = false,
   showBottomPanel = false,
@@ -70,6 +75,7 @@ export function MenuBar({
 }: MenuBarProps) {
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const { mainContentView, setMainContentView } = useWorkspace();
+  const { theme, toggleTheme } = useTheme();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,7 +91,7 @@ export function MenuBar({
   return (
     <div
       ref={ref}
-      className="flex items-center h-8 bg-ide-menubar-bg select-none shrink-0 z-50"
+      className="flex items-center h-8 bg-muted/50 border-b border-border select-none shrink-0 z-50"
       style={{ userSelect: 'none', WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       {/* macOS traffic light clearance */}
@@ -93,145 +99,141 @@ export function MenuBar({
 
       {/* App icon / title */}
       <div className="flex items-center gap-1.5 px-3 pr-2" style={noDrag as React.CSSProperties}>
-        <div className="w-4 h-4 rounded-sm bg-ide-accent flex items-center justify-center">
-          <span className="text-white text-[9px] font-bold">P</span>
+        <div className="w-4 h-4 rounded-sm bg-primary flex items-center justify-center">
+          <span className="text-primary-foreground text-[9px] font-bold">P</span>
         </div>
-        {/* <span className="text-ide-text text-[12px]">Pristine</span> */}
       </div>
 
       {/* Menu items */}
       {menus.map((menu, idx) => (
-        <div key={menu.label} className="relative" style={noDrag as React.CSSProperties}>
-          <button
-            className={`px-2.5 h-8 text-ide-text hover:bg-ide-btn-hover transition-colors ${
-              openMenu === idx ? 'bg-ide-accent-dark text-white' : ''
-            } text-[12px]`}
-            onClick={() => setOpenMenu(openMenu === idx ? null : idx)}
-            onMouseEnter={() => openMenu !== null && setOpenMenu(idx)}
-          >
-            {menu.label}
-          </button>
-
-          {openMenu === idx && (
-            <div className="absolute top-full left-0 bg-ide-sidebar-bg border border-ide-border-light shadow-2xl z-50 min-w-48 py-1">
-              {menu.items.map((item, i) =>
-                item === '---' ? (
-                  <div key={i} className="h-px bg-ide-border-light my-1" />
-                ) : (
-                  <button
-                    key={i}
-                    className="w-full text-left px-4 py-1 text-ide-text hover:bg-ide-accent-dark hover:text-white transition-colors text-[12px]"
-                    onClick={() => setOpenMenu(null)}
-                  >
-                    {item}
-                  </button>
-                )
-              )}
-            </div>
-          )}
-        </div>
+        <DropdownMenu key={menu.label} open={openMenu === idx} onOpenChange={(open) => setOpenMenu(open ? idx : null)}>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`px-2.5 h-8 text-foreground hover:bg-accent transition-colors text-[12px] outline-none ${
+                openMenu === idx ? 'bg-primary text-primary-foreground' : ''
+              }`}
+              style={noDrag as React.CSSProperties}
+              onMouseEnter={() => openMenu !== null && setOpenMenu(idx)}
+            >
+              {menu.label}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" sideOffset={0} className="min-w-48">
+            {menu.items.map((item, i) =>
+              item === '---' ? (
+                <DropdownMenuSeparator key={i} />
+              ) : (
+                <DropdownMenuItem
+                  key={i}
+                  className="text-[12px]"
+                  onSelect={() => setOpenMenu(null)}
+                >
+                  {item}
+                </DropdownMenuItem>
+              )
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       ))}
 
 
       {/* Center view switcher — absolutely centered */}
       <div
         data-testid="center-view-switcher"
-        className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-[#2d2d2d] rounded p-0.5"
+        className="absolute left-1/2 -translate-x-1/2"
         style={noDragInteractive as React.CSSProperties}
       >
-        <button
-          title="Code"
-          onClick={() => setMainContentView('code')}
-          className={`w-7 h-6 flex cursor-pointer items-center justify-center rounded transition-colors ${
-            mainContentView === 'code'
-              ? 'bg-[#505050] text-[#cccccc]'
-              : 'text-[#858585] hover:text-[#cccccc] hover:bg-[#404040]'
-          }`}
+        <ToggleGroup
+          type="single"
+          value={mainContentView}
+          onValueChange={(value) => { if (value) setMainContentView(value as 'code' | 'whiteboard' | 'workflow'); }}
+          className="bg-muted rounded p-0.5 gap-0.5"
         >
-          <Code2 size={13} />
-        </button>
-        <button
-          title="Whiteboard"
-          onClick={() => setMainContentView('whiteboard')}
-          className={`w-7 h-6 flex cursor-pointer items-center justify-center rounded transition-colors ${
-            mainContentView === 'whiteboard'
-              ? 'bg-[#505050] text-[#cccccc]'
-              : 'text-[#858585] hover:text-[#cccccc] hover:bg-[#404040]'
-          }`}
-        >
-          <Presentation size={13} />
-        </button>
-        <button
-          title="Workflow"
-          onClick={() => setMainContentView('workflow')}
-          className={`w-7 h-6 flex cursor-pointer items-center justify-center rounded transition-colors ${
-            mainContentView === 'workflow'
-              ? 'bg-[#505050] text-[#cccccc]'
-              : 'text-[#858585] hover:text-[#cccccc] hover:bg-[#404040]'
-          }`}
-        >
-          <Workflow size={13} />
-        </button>
+          <ToggleGroupItem value="code" title="Code" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground">
+            <Code2 size={13} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="whiteboard" title="Whiteboard" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground">
+            <Presentation size={13} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="workflow" title="Workflow" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground">
+            <Workflow size={13} />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Right side controls */}
       <div className="ml-auto flex items-center h-full" style={noDrag as React.CSSProperties}>
 
         {/* Layout icons */}
-        <button
-          type="button"
+        <Toggle
           aria-label="Toggle left sidebar"
-          aria-pressed={showLeftPanel}
+          pressed={showLeftPanel}
           data-testid="toggle-left-panel"
-          className={`${getLayoutButtonClass(showLeftPanel)} cursor-pointer`}
-          onClick={onToggleLeftPanel}
+          className="w-8 h-full rounded-none border-0 data-[state=on]:bg-accent data-[state=on]:text-foreground text-muted-foreground hover:text-foreground hover:bg-accent"
+          onPressedChange={() => onToggleLeftPanel?.()}
         >
           <PanelLeft size={15} />
-        </button>
-        <button
-          type="button"
+        </Toggle>
+        <Toggle
           aria-label="Toggle bottom panel"
-          aria-pressed={showBottomPanel}
+          pressed={showBottomPanel}
           data-testid="toggle-bottom-panel"
-          className={`${getLayoutButtonClass(showBottomPanel)} cursor-pointer`}
-          onClick={onToggleBottomPanel}
+          className="w-8 h-full rounded-none border-0 data-[state=on]:bg-accent data-[state=on]:text-foreground text-muted-foreground hover:text-foreground hover:bg-accent"
+          onPressedChange={() => onToggleBottomPanel?.()}
         >
           <PanelBottom size={15} />
-        </button>
-        <button
-          type="button"
+        </Toggle>
+        <Toggle
           aria-label="Toggle right sidebar"
-          aria-pressed={showRightPanel}
+          pressed={showRightPanel}
           data-testid="toggle-right-panel"
-          className={`${getLayoutButtonClass(showRightPanel)} cursor-pointer`}
-          onClick={onToggleRightPanel}
+          className="w-8 h-full rounded-none border-0 data-[state=on]:bg-accent data-[state=on]:text-foreground text-muted-foreground hover:text-foreground hover:bg-accent"
+          onPressedChange={() => onToggleRightPanel?.()}
         >
           <Columns2 size={15} />
-        </button>
+        </Toggle>
 
-        {/* Divider */}
-        <div className="w-px h-4 bg-ide-text-dim mx-1" />
+        <Separator orientation="vertical" className="h-4 mx-1" />
+
+        {/* Theme toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Toggle theme"
+          data-testid="toggle-theme"
+          className="w-8 h-full rounded-none text-muted-foreground hover:text-foreground"
+          onClick={toggleTheme}
+        >
+          {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+        </Button>
 
         {/* Settings */}
-        <button className="w-8 h-full flex cursor-pointer items-center justify-center text-ide-text-muted hover:text-ide-text hover:bg-ide-btn-hover transition-colors">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-8 h-full rounded-none text-muted-foreground hover:text-foreground"
+        >
           <Settings size={15} />
-        </button>
+        </Button>
 
         {/* User avatar */}
-        <button className="w-8 h-full flex cursor-pointer items-center justify-center hover:bg-ide-btn-hover transition-colors relative">
-          <CircleUser size={16} className="text-ide-text-muted" />
-          <span className="absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full bg-ide-online border border-ide-menubar-bg" />
-        </button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-8 h-full rounded-none relative"
+        >
+          <CircleUser size={16} className="text-muted-foreground" />
+          <span className="absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500 border border-background" />
+        </Button>
 
-        {/* Divider */}
-        <div className="w-px h-4 bg-ide-text-dim mx-1" />
+        <Separator orientation="vertical" className="h-4 mx-1" />
 
         {/* Window controls (hidden on macOS — native traffic lights used instead) */}
         {!isMacOS && (
           <>
             <button
               data-testid="window-control-minimize"
-              className="w-9 h-full flex items-center justify-center text-ide-text-muted hover:text-white hover:bg-ide-btn-hover transition-colors"
+              className="w-9 h-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               style={noDragInteractive as React.CSSProperties}
               onClick={() => window.electronAPI?.minimize()}
             >
@@ -239,7 +241,7 @@ export function MenuBar({
             </button>
             <button
               data-testid="window-control-maximize"
-              className="w-9 h-full flex items-center justify-center text-ide-text-muted hover:text-white hover:bg-ide-btn-hover transition-colors"
+              className="w-9 h-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               style={noDragInteractive as React.CSSProperties}
               onClick={() => window.electronAPI?.maximize()}
             >
@@ -247,7 +249,7 @@ export function MenuBar({
             </button>
             <button
               data-testid="window-control-close"
-              className="w-9 h-full flex items-center justify-center text-ide-text-muted hover:text-white hover:bg-ide-close transition-colors"
+              className="w-9 h-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-destructive/80 transition-colors"
               style={noDragInteractive as React.CSSProperties}
               onClick={() => window.electronAPI?.close()}
             >

@@ -65,7 +65,7 @@ describe('ActivityBar', () => {
 
     const explorerButton = screen.getByTestId('activity-item-explorer');
 
-    expect(explorerButton).toHaveClass('text-ide-text-muted', 'border-transparent');
-    expect(explorerButton).not.toHaveClass('text-white', 'border-ide-accent');
+    expect(explorerButton).toHaveClass('text-muted-foreground', 'border-transparent');
+    expect(explorerButton).not.toHaveClass('text-foreground', 'border-primary');
   });
 });

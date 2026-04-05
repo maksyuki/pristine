@@ -1,7 +1,7 @@
 @import 'tailwindcss' source(none);
 @source '../**/*.{js,ts,jsx,tsx}';
 
-/* Dark scrollbar for VS Code-like panels */
+/* Scrollbar styling */
 .overflow-y-auto::-webkit-scrollbar,
 .overflow-x-auto::-webkit-scrollbar,
 .overflow-auto::-webkit-scrollbar {
@@ -18,14 +18,14 @@
 .overflow-y-auto::-webkit-scrollbar-thumb,
 .overflow-x-auto::-webkit-scrollbar-thumb,
 .overflow-auto::-webkit-scrollbar-thumb {
-  background: #424242;
+  background: var(--ide-text-dim);
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover,
 .overflow-x-auto::-webkit-scrollbar-thumb:hover,
 .overflow-auto::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--ide-text-muted);
 }
 
 .explorer-tree-scrollbar::-webkit-scrollbar-thumb {
@@ -33,11 +33,11 @@
 }
 
 .explorer-tree-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: #424242;
+  background: var(--ide-text-dim);
 }
 
 .explorer-tree-scrollbar:hover::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--ide-text-muted);
 }
 
 /* Prevent default margins/paddings that break the layout */
@@ -46,7 +46,6 @@ body {
   padding: 0;
   overflow: hidden;
   height: 100vh;
-  background: #1e1e1e;
 }
 
 #root {

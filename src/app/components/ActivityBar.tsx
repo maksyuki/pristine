@@ -29,6 +29,8 @@ const actionItems = [
   { id: 'debug-action', icon: Bug, label: 'Debug' }
 ] as const;
 
+const activityBarButtonBaseClass = 'relative h-10 w-12 flex items-center justify-center rounded-none p-0 transition-colors group-data-[collapsible=icon]:h-10! group-data-[collapsible=icon]:w-12! group-data-[collapsible=icon]:p-0!';
+
 export function ActivityBar({ activeView, onItemSelect, isLeftSidebarHidden = false }: ActivityBarProps) {
   return (
     <SidebarProvider
@@ -38,7 +40,7 @@ export function ActivityBar({ activeView, onItemSelect, isLeftSidebarHidden = fa
     >
       <Sidebar collapsible="icon" className="static h-full w-12 border-r border-border bg-muted/40" side="left">
         <SidebarContent className="flex-1">
-          <SidebarMenu>
+          <SidebarMenu className="gap-0">
             {topItems.map(({ id, icon: Icon, label }) => (
               <SidebarMenuItem key={id}>
                 <SidebarMenuButton
@@ -48,7 +50,7 @@ export function ActivityBar({ activeView, onItemSelect, isLeftSidebarHidden = fa
                   data-testid={`activity-item-${id}`}
                   onClick={() => onItemSelect(id)}
                   size="lg"
-                  className={`relative w-12 h-12 flex items-center justify-center rounded-none transition-colors [&>svg]:size-5 ${
+                  className={`${activityBarButtonBaseClass} [&>svg]:size-5 ${
                     activeView === id && !isLeftSidebarHidden
                       ? 'text-foreground border-l-2 border-primary bg-transparent hover:bg-sidebar-accent'
                       : 'text-muted-foreground hover:text-foreground border-l-2 border-transparent hover:bg-sidebar-accent'
@@ -61,17 +63,17 @@ export function ActivityBar({ activeView, onItemSelect, isLeftSidebarHidden = fa
           </SidebarMenu>
         </SidebarContent>
 
-        <SidebarSeparator className="mx-2" />
+        <SidebarSeparator className="mx-0" />
 
-        <SidebarFooter className="px-1.5 py-2">
-          <SidebarMenu className="gap-1.5">
+        <SidebarFooter className="px-0 py-0">
+          <SidebarMenu className="gap-0">
             {actionItems.map(({ id, icon: Icon, label }) => (
               <SidebarMenuItem key={id}>
                 <SidebarMenuButton
                   title={label}
                   aria-label={label}
                   data-testid={`activity-action-${id}`}
-                  className="h-9 w-9 mx-auto text-emerald-500 hover:text-emerald-400 hover:bg-sidebar-accent [&>svg]:size-[18px]"
+                  className={`${activityBarButtonBaseClass} text-emerald-500 hover:bg-sidebar-accent hover:text-emerald-400 [&>svg]:size-[18px]`}
                 >
                   <Icon size={18} strokeWidth={1.7} />
                 </SidebarMenuButton>

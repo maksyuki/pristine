@@ -77,4 +77,17 @@ describe('MenuBar', () => {
     expect(screen.getByTitle('Whiteboard')).toBeInTheDocument();
     expect(screen.getByTitle('Workflow')).toBeInTheDocument();
   });
+
+  it('adds a pointer cursor on hover to the interactive menubar controls', () => {
+    renderMenuBar();
+
+    expect(screen.getByTitle('Code')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTitle('Whiteboard')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTitle('Workflow')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTestId('toggle-left-panel')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTestId('toggle-bottom-panel')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTestId('toggle-right-panel')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTestId('toggle-theme')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTestId('user-avatar-button')).toHaveClass('hover:cursor-pointer');
+  });
 });

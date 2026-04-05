@@ -153,27 +153,31 @@ export function MenuBar({
           onValueChange={(value) => { if (value) setMainContentView(value as 'code' | 'whiteboard' | 'workflow'); }}
           className="bg-muted rounded p-0.5 gap-0.5"
         >
-          <ToggleGroupItem value="code" title="Code" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground">
+          <ToggleGroupItem value="code" title="Code" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground hover:cursor-pointer">
             <Code2 size={13} />
           </ToggleGroupItem>
-          <ToggleGroupItem value="whiteboard" title="Whiteboard" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground">
+          <ToggleGroupItem value="whiteboard" title="Whiteboard" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground hover:cursor-pointer">
             <Presentation size={13} />
           </ToggleGroupItem>
-          <ToggleGroupItem value="workflow" title="Workflow" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground">
+          <ToggleGroupItem value="workflow" title="Workflow" className="w-7 h-6 p-0 data-[state=on]:bg-background data-[state=on]:text-foreground text-muted-foreground hover:cursor-pointer">
             <Workflow size={13} />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
       {/* Right side controls */}
-      <div className="ml-auto flex items-center h-full" style={noDrag as React.CSSProperties}>
+      <div
+        data-testid="right-side-controls"
+        className="ml-auto flex items-center h-full"
+        style={noDrag as React.CSSProperties}
+      >
 
         {/* Layout icons */}
         <Toggle
           aria-label="Toggle left sidebar"
           pressed={showLeftPanel}
           data-testid="toggle-left-panel"
-          className="w-8 h-full rounded-none border-0 data-[state=on]:text-foreground text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="w-8 h-full rounded-none border-0 data-[state=on]:text-foreground text-muted-foreground hover:cursor-pointer hover:text-foreground hover:bg-accent"
           onPressedChange={() => onToggleLeftPanel?.()}
         >
           <PanelLeftIcon size={15} filled={showLeftPanel} />
@@ -182,7 +186,7 @@ export function MenuBar({
           aria-label="Toggle bottom panel"
           pressed={showBottomPanel}
           data-testid="toggle-bottom-panel"
-          className="w-8 h-full rounded-none border-0 data-[state=on]:text-foreground text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="w-8 h-full rounded-none border-0 data-[state=on]:text-foreground text-muted-foreground hover:cursor-pointer hover:text-foreground hover:bg-accent"
           onPressedChange={() => onToggleBottomPanel?.()}
         >
           <PanelBottomIcon size={15} filled={showBottomPanel} />
@@ -191,7 +195,7 @@ export function MenuBar({
           aria-label="Toggle right sidebar"
           pressed={showRightPanel}
           data-testid="toggle-right-panel"
-          className="w-8 h-full rounded-none border-0 data-[state=on]:text-foreground text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="w-8 h-full rounded-none border-0 data-[state=on]:text-foreground text-muted-foreground hover:cursor-pointer hover:text-foreground hover:bg-accent"
           onPressedChange={() => onToggleRightPanel?.()}
         >
           <PanelRightIcon size={15} filled={showRightPanel} />
@@ -205,7 +209,7 @@ export function MenuBar({
           size="icon"
           aria-label="Toggle theme"
           data-testid="toggle-theme"
-          className="w-8 h-full rounded-none text-muted-foreground hover:text-foreground"
+          className="w-8 h-full rounded-none text-muted-foreground hover:cursor-pointer hover:text-foreground"
           onClick={toggleTheme}
         >
           {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
@@ -215,7 +219,7 @@ export function MenuBar({
         <Button
           variant="ghost"
           size="icon"
-          className="w-8 h-full rounded-none text-muted-foreground hover:text-foreground"
+          className="w-8 h-full rounded-none text-muted-foreground hover:cursor-pointer hover:text-foreground"
         >
           <Settings size={15} />
         </Button>
@@ -224,7 +228,8 @@ export function MenuBar({
         <Button
           variant="ghost"
           size="icon"
-          className="w-8 h-full rounded-none relative"
+          data-testid="user-avatar-button"
+          className="relative h-full w-8 rounded-none hover:cursor-pointer"
         >
           <CircleUser size={16} className="text-muted-foreground" />
           <span className="absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full bg-green-500 border border-background" />

@@ -15,7 +15,7 @@ describe('ActivityBar', () => {
     expect(screen.queryByTestId('activity-action-debug-action')).not.toBeInTheDocument();
     expect(screen.queryByTitle('Settings')).not.toBeInTheDocument();
     expect(screen.getByTitle('Explorer')).toBeInTheDocument();
-    expect(screen.getByTitle('Run & Debug')).toBeInTheDocument();
+    expect(screen.getByTitle('Simulation & Debug')).toBeInTheDocument();
     expect(screen.queryByTitle('Search')).not.toBeInTheDocument();
     expect(screen.queryByTitle('Extensions')).not.toBeInTheDocument();
   });
@@ -43,10 +43,10 @@ describe('ActivityBar', () => {
 
     render(<ActivityBar activeView="explorer" onItemSelect={onItemSelect} />);
 
-    fireEvent.click(screen.getByTestId('activity-item-debug'));
+    fireEvent.click(screen.getByTestId('activity-item-sim-debug'));
     fireEvent.click(screen.getByTestId('activity-item-explorer'));
 
-    expect(onItemSelect).toHaveBeenNthCalledWith(1, 'debug');
+    expect(onItemSelect).toHaveBeenNthCalledWith(1, 'sim-debug');
     expect(onItemSelect).toHaveBeenNthCalledWith(2, 'explorer');
   });
 
@@ -63,5 +63,12 @@ describe('ActivityBar', () => {
 
     expect(explorerButton).toHaveClass('text-muted-foreground', 'border-transparent');
     expect(explorerButton).not.toHaveClass('text-foreground', 'border-primary');
+  });
+
+  it('adds a pointer cursor on hover for navigation and action buttons', () => {
+    render(<ActivityBar activeView="explorer" onItemSelect={vi.fn()} />);
+
+    expect(screen.getByTestId('activity-item-explorer')).toHaveClass('hover:cursor-pointer');
+    expect(screen.getByTestId('activity-action-compile')).toHaveClass('hover:cursor-pointer');
   });
 });

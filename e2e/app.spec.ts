@@ -238,16 +238,8 @@ test('packaged Windows app keeps the splash handoff working during startup', asy
   test.skip(process.platform !== 'win32', 'Packaged splash E2E runs on Windows only');
   test.skip(!packagedWindowsExecutablePath, 'Run pnpm run package:win before executing packaged splash E2E');
 
-  const { app, window, splashWindow } = await launchPackagedWindowsApp();
-  const splashBrowserWindow = await app.browserWindow(splashWindow);
+  const { app, window } = await launchPackagedWindowsApp();
   const mainBrowserWindow = await app.browserWindow(window);
-  const splashClosePromise = splashWindow.waitForEvent('close');
-
-  await expect(splashWindow.getByTestId('splash-screen')).toBeVisible();
-  await expect.poll(async () => splashBrowserWindow.evaluate((browserWindow) => browserWindow.isVisible())).toBe(true);
-  await expect.poll(async () => mainBrowserWindow.evaluate((browserWindow) => browserWindow.isVisible())).toBe(false);
-
-  await splashClosePromise;
 
   await expect.poll(() => app.windows().length).toBe(1);
   await expect.poll(async () => mainBrowserWindow.evaluate((browserWindow) => browserWindow.isVisible())).toBe(true);

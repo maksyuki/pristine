@@ -1,5 +1,5 @@
 import {
-  Files, Bug, Hammer, Play,
+  FileCode, BugPlay, Cog, LucideLayers3, Hammer, Play,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -19,8 +19,10 @@ interface ActivityBarProps {
 }
 
 const topItems = [
-  { id: 'explorer', icon: Files, label: 'Explorer' },
-  { id: 'debug', icon: Bug, label: 'Run & Debug' },
+  { id: 'explorer', icon: FileCode, label: 'Explorer' },
+  { id: 'sim-debug', icon: BugPlay, label: 'Simulation & Debug' },
+  { id: 'synthesis', icon: Cog, label: 'Synthesis' },
+  { id: 'physical', icon: LucideLayers3, label: 'Physical Design' },
 ];
 
 const actionItems = [
@@ -28,7 +30,7 @@ const actionItems = [
   { id: 'run', icon: Play, label: 'Run' },
 ] as const;
 
-const activityBarButtonBaseClass = 'relative h-10 w-12 flex items-center justify-center rounded-none p-0 transition-colors group-data-[collapsible=icon]:h-10! group-data-[collapsible=icon]:w-12! group-data-[collapsible=icon]:p-0!';
+const activityBarButtonBaseClass = 'relative h-10 w-12 flex items-center justify-center rounded-none p-0 transition-colors hover:cursor-pointer group-data-[collapsible=icon]:h-10! group-data-[collapsible=icon]:w-12! group-data-[collapsible=icon]:p-0!';
 
 export function ActivityBar({ activeView, onItemSelect, isLeftSidebarHidden = false }: ActivityBarProps) {
   return (
